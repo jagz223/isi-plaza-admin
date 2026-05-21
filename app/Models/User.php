@@ -2,15 +2,20 @@
 
 namespace App\Models;
 
+use App\Enums\UserRole;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    /** @use HasFactory<UserFactory> */
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -21,6 +26,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'provider',
+        'provider_id',
     ];
 
     /**
@@ -43,6 +51,39 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => UserRole::class,
         ];
+    }
+
+    /**
+     * @return HasOne<SellerProfile, $this>
+     */
+    public function sellerProfile(): HasOne
+    {
+        return $this->hasOne(SellerProfile::class);
+    }
+
+    /**
+     * @return HasMany<Favorite, $this>
+     */
+    public function favoritesAsComprador(): HasMany
+    {
+        return $this->hasMany(Favorite::class, 'comprador_id');
+    }
+
+    /**
+     * @return HasMany<Favorite, $this>
+     */
+    public function favoritesAsMayorista(): HasMany
+    {
+        return $this->hasMany(Favorite::class, 'mayorista_id');
+    }
+
+    /**
+     * @return HasMany<SellerInteractionEvent, $this>
+     */
+    public function sellerInteractionEvents(): HasMany
+    {
+        return $this->hasMany(SellerInteractionEvent::class, 'seller_user_id');
     }
 }

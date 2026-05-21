@@ -34,6 +34,12 @@ export default function Welcome() {
                                 >
                                     Register
                                 </Link>
+                                <a
+                                    href={route('isi-plaza.access', { iniciar: 1 })}
+                                    className="inline-block rounded-sm border border-[#E00000] px-5 py-1.5 text-sm font-medium leading-normal text-[#E00000] hover:bg-[#FFF5F5] dark:border-[#FF7676] dark:text-[#FF7676] dark:hover:bg-[#2a0a0a]"
+                                >
+                                    Panel ISI PLAZA
+                                </a>
                             </>
                         )}
                     </nav>

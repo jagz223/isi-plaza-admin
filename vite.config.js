@@ -18,4 +18,12 @@ export default defineConfig({
     esbuild: {
         jsx: 'automatic',
     },
+    optimizeDeps: {
+        include: ['react', 'react-dom', '@inertiajs/react', 'laravel-vite-plugin/inertia-helpers'],
+    },
+    server: {
+        watch: {
+            ignored: ['**/storage/**', '**/vendor/**', '**/tests/**'],
+        },
+    },
 });

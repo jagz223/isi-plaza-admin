@@ -21,9 +21,13 @@ createInertiaApp({
         root.render(<App {...props} />);
     },
     progress: {
-        color: '#4B5563',
+        color: '#E00000',
     },
 });
 
-// This will set light / dark mode on load...
-initializeTheme();
+const initialPage = (document.getElementById('app')?.getAttribute('data-page') ?? '') as string;
+const isIsiPlazaPanel = initialPage.includes('"component":"isi-plaza\\/');
+
+if (! isIsiPlazaPanel) {
+    initializeTheme();
+}

@@ -27,6 +27,15 @@ class HandleInertiaRequests extends Middleware
         return parent::version($request);
     }
 
+    public function rootView(Request $request): string
+    {
+        if ($request->is('isi-plaza', 'isi-plaza/*')) {
+            return 'isi-plaza';
+        }
+
+        return parent::rootView($request);
+    }
+
     /**
      * Define the props that are shared by default.
      *
@@ -36,15 +45,26 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
-
-        return array_merge(parent::share($request), [
+        $shared = [
             ...parent::share($request),
             'name' => config('app.name'),
-            'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user(),
             ],
-        ]);
+        ];
+
+        if ($request->is('isi-plaza', 'isi-plaza/*')) {
+            $shared['flash'] = [
+                'success' => fn () => $request->session()->get('success'),
+                'warning' => fn () => $request->session()->get('warning'),
+                'info' => fn () => $request->session()->get('info'),
+            ];
+        } else {
+            [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
+
+            $shared['quote'] = ['message' => trim($message), 'author' => trim($author)];
+        }
+
+        return $shared;
     }
 }
