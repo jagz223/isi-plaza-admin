@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsurePlatformAccessEnabled;
 use App\Http\Middleware\EnsureConsumerApiUser;
 use App\Http\Middleware\EnsureIsiPlazaWebSession;
 use App\Http\Middleware\EnsureSellerApiUser;
@@ -29,6 +30,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'seller.active' => EnsureSellerHasActiveAccess::class,
             'consumer.api' => EnsureConsumerApiUser::class,
             'sanctum.optional' => OptionalSanctumAuthentication::class,
+        ]);
+        $middleware->web(prepend: [
+            EnsurePlatformAccessEnabled::class,
+        ]);
+        $middleware->api(prepend: [
+            EnsurePlatformAccessEnabled::class,
         ]);
         $middleware->web(append: [
             HandleInertiaRequests::class,
