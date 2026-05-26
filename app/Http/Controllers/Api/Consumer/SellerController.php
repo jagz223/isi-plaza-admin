@@ -34,8 +34,13 @@ class SellerController extends Controller
         }
 
         if ($request->filled('state')) {
-            $query->whereHas('sellerProfile', fn ($q) => $q
-                ->where('state', $request->string('state')));
+            $query->whereHas('sellerProfile', function ($q) use ($request) {
+                // Compatible with both string and JSON array
+                $q->where(function($sq) use ($request) {
+                    $sq->where('state', 'like', '%"'.$request->string('state').'"%')
+                      ->orWhere('state', $request->string('state'));
+                });
+            });
         }
 
         $perPage = $request->integer('per_page', config('isi-plaza.consumer.sellers_per_page', 20));

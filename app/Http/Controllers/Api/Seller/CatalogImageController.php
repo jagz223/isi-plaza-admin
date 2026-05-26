@@ -54,16 +54,24 @@ class CatalogImageController extends Controller
             ], 422);
         }
 
-        $max = (int) config('isi-plaza.seller.max_catalog_images', 5);
+        $maxTotal = 25;
+        $maxPerCarousel = 5;
 
-        if ($profile->catalogImages()->count() >= $max) {
+        if ($profile->catalogImages()->count() >= $maxTotal) {
             return response()->json([
-                'message' => "Solo puedes subir hasta {$max} imágenes de catálogo.",
+                'message' => "Solo puedes subir hasta {$maxTotal} imágenes de catálogo en total.",
             ], 422);
         }
 
-        $displayOrder = $request->integer('display_order', $profile->catalogImages()->count() + 1);
-        $displayOrder = min(max($displayOrder, 1), $max);
+        $displayOrder = $request->integer('display_order', 1);
+        $displayOrder = min(max($displayOrder, 1), 5); // 5 carousels max
+
+        $imagesInCurrentCarousel = $profile->catalogImages()->where('display_order', $displayOrder)->count();
+        if ($imagesInCurrentCarousel >= $maxPerCarousel) {
+            return response()->json([
+                'message' => "Solo puedes subir hasta {$maxPerCarousel} imágenes por carrusel.",
+            ], 422);
+        }
 
         $path = $request->file('image')->store('catalog', 'public');
 

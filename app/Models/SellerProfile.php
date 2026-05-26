@@ -14,6 +14,9 @@ class SellerProfile extends Model
         'user_id',
         'business_category_id',
         'avatar_path',
+        'pdf_path',
+        'excel_path',
+        'carousel_metadata',
         'description',
         'country',
         'state',
@@ -39,6 +42,8 @@ class SellerProfile extends Model
             'access_status' => AccessStatus::class,
             'subscription_expires_at' => 'datetime',
             'subscription_granted_at' => 'datetime',
+            'state' => 'array',
+            'carousel_metadata' => 'array',
         ];
     }
 

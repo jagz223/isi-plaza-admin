@@ -40,9 +40,11 @@ class ProfileController extends Controller
             'user_id' => $user->id,
             'method' => $request->method(),
             'content_type' => $request->header('Content-Type'),
-            'payload_keys' => array_keys($request->except(['avatar'])),
-            'validated' => $request->safe()->except(['avatar']),
+            'payload_keys' => array_keys($request->except(['avatar', 'pdf', 'excel'])),
+            'validated' => $request->safe()->except(['avatar', 'pdf', 'excel']),
             'has_avatar_file' => $request->hasFile('avatar'),
+            'has_pdf_file' => $request->hasFile('pdf'),
+            'has_excel_file' => $request->hasFile('excel'),
             'all_file_keys' => array_keys($request->allFiles()),
             'files_meta' => self::describeUploadedFiles($request),
         ]);
@@ -57,13 +59,27 @@ class ProfileController extends Controller
             'whatsapp' => $profile->whatsapp,
         ]);
 
-        $data = $request->safe()->except(['avatar']);
+        $data = $request->safe()->except(['avatar', 'pdf', 'excel']);
 
         if ($request->hasFile('avatar')) {
             if ($profile->avatar_path) {
                 Storage::disk('public')->delete($profile->avatar_path);
             }
             $data['avatar_path'] = $request->file('avatar')->store('seller-avatars', 'public');
+        }
+
+        if ($request->hasFile('pdf')) {
+            if ($profile->pdf_path) {
+                Storage::disk('public')->delete($profile->pdf_path);
+            }
+            $data['pdf_path'] = $request->file('pdf')->store('seller-documents', 'public');
+        }
+
+        if ($request->hasFile('excel')) {
+            if ($profile->excel_path) {
+                Storage::disk('public')->delete($profile->excel_path);
+            }
+            $data['excel_path'] = $request->file('excel')->store('seller-documents', 'public');
         }
 
         if ($data === []) {

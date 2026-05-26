@@ -6,6 +6,8 @@ import { IsiPlazaFlashMessages } from '@/components/isi-plaza/isi-plaza-flash-me
 import { useIsiPlazaLightShell } from '@/hooks/use-isi-plaza-light-shell';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import { Menu, X } from 'lucide-react';
 
 const nav: { title: string; path: string; routeName: string; icon: LucideIcon }[] = [
     { title: 'Gestión de datos', path: '/isi-plaza/gestion', routeName: 'isi-plaza.gestion', icon: ClipboardList },
@@ -18,6 +20,8 @@ export default function IsiPlazaLayout({ title, children }: PropsWithChildren<{ 
     const { url } = usePage();
     const path = url.split('?')[0].replace(/\/$/, '') || '/';
 
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
     const signOutForm = useForm({});
 
     const submitSignOut = (e: React.FormEvent) => {
@@ -27,9 +31,21 @@ export default function IsiPlazaLayout({ title, children }: PropsWithChildren<{ 
 
     return (
         <div className="isi-plaza-theme min-h-screen bg-white text-neutral-950">
-            <div className="flex min-h-screen">
-                <aside className="flex w-64 shrink-0 flex-col border-r border-neutral-200 bg-white">
-                    <div className="border-b border-neutral-200 px-4 py-6">
+            <div className="flex min-h-screen flex-col md:flex-row">
+                
+                {/* Mobile Header Toggle */}
+                <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3 md:hidden">
+                    <img src="/images/isi-plaza/logo.jpg" alt="ISI PLAZA" className="h-8 w-auto object-contain" />
+                    <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                        {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+                    </Button>
+                </div>
+
+                <aside className={cn(
+                    "flex w-full shrink-0 flex-col border-r border-neutral-200 bg-white md:w-64",
+                    mobileMenuOpen ? "block" : "hidden md:flex"
+                )}>
+                    <div className="hidden border-b border-neutral-200 px-4 py-6 md:block">
                         <Link href={route('isi-plaza.gestion')} className="flex flex-col items-center gap-2">
                             <img src="/images/isi-plaza/logo.jpg" alt="ISI PLAZA" className="h-14 w-auto object-contain" />
                             <span className="text-xs font-semibold uppercase tracking-widest text-[#E00000]">Panel administrativo</span>
@@ -43,6 +59,7 @@ export default function IsiPlazaLayout({ title, children }: PropsWithChildren<{ 
                                 <Link
                                     key={item.routeName}
                                     href={route(item.routeName)}
+                                    onClick={() => setMobileMenuOpen(false)}
                                     className={cn(
                                         'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                                         active
@@ -71,10 +88,10 @@ export default function IsiPlazaLayout({ title, children }: PropsWithChildren<{ 
                     </div>
                 </aside>
                 <main className="flex min-w-0 flex-1 flex-col bg-[#FAFAFA]">
-                    <header className="border-b border-neutral-200 bg-white px-6 py-4">
+                    <header className="border-b border-neutral-200 bg-white px-4 py-4 md:px-6">
                         <h1 className="text-lg font-semibold tracking-tight text-neutral-900">{title}</h1>
                     </header>
-                    <div className="flex-1 p-6">
+                    <div className="flex-1 p-4 md:p-6 overflow-x-auto">
                         <IsiPlazaFlashMessages />
                         {children}
                     </div>
