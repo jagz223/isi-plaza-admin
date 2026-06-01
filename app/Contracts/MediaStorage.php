@@ -20,4 +20,13 @@ interface MediaStorage
      * Resuelve URL para la API (URL completa o ruta legacy en storage/public).
      */
     public function resolveUrl(?string $storedValue): ?string;
+
+    /**
+     * Abre un stream de lectura del objeto en Storage (p. ej. para servir vía API autenticada).
+     *
+     * @return resource
+     */
+    public function readStream(string $storedValue);
+
+    public function contentTypeForStoredValue(string $storedValue): string;
 }

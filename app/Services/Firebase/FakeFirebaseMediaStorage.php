@@ -51,6 +51,26 @@ class FakeFirebaseMediaStorage implements MediaStorage
         return PublicStorageUrl::forPath($storedValue);
     }
 
+    public function readStream(string $storedValue)
+    {
+        $objectPath = $this->objectPathFromFakeUrl($storedValue);
+
+        if ($objectPath === null) {
+            throw new \RuntimeException('No se pudo resolver la ruta del archivo.');
+        }
+
+        $path = Storage::disk('local')->path('firebase-fake/'.$objectPath);
+
+        return fopen($path, 'r');
+    }
+
+    public function contentTypeForStoredValue(string $storedValue): string
+    {
+        $objectPath = $this->objectPathFromFakeUrl($storedValue) ?? '';
+
+        return str_ends_with(strtolower($objectPath), '.png') ? 'image/png' : 'image/jpeg';
+    }
+
     private function downloadUrl(string $bucketName, string $objectPath, string $token): string
     {
         $encodedPath = rawurlencode($objectPath);

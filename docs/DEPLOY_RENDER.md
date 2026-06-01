@@ -84,6 +84,10 @@ Genera `APP_KEY` en local: `php artisan key:generate --show` o deja que Render l
 
 **Firebase en Render:** abre `storage/app/firebase/....json`, copia **todo** el contenido y pégalo en `FIREBASE_SERVICE_ACCOUNT_JSON` (tipo Secret). No subas el archivo al repo.
 
+| `FIREBASE_STORAGE_DEFAULT_BUCKET` | `isi-plaza-bf7f0.firebasestorage.app` |
+
+**Imágenes 403 en la app:** Laravel sube a Firebase con la cuenta de servicio; **no hace falta abrir Storage al público**. La API lista catálogo con URLs tipo `GET /api/v1/seller/catalog-images/{id}/file` (Sanctum); la app seller envía `Authorization: Bearer …` al cargar cada miniatura. Tras desplegar admin en Render, vuelve a cargar el perfil en la app (no uses URLs antiguas de `firebasestorage.googleapis.com` guardadas en caché del cliente).
+
 Opcional tras el primer deploy:
 
 ```bash

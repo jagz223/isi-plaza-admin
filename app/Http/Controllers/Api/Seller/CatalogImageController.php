@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 class CatalogImageController extends Controller
@@ -100,6 +101,36 @@ class CatalogImageController extends Controller
         ]);
 
         return CatalogImageResource::make($image)->response()->setStatusCode(201);
+    }
+
+    public function file(Request $request, CatalogImage $catalogImage): StreamedResponse
+    {
+        $profile = $request->user()->sellerProfile;
+
+        if ($catalogImage->seller_profile_id !== $profile?->id) {
+            abort(404);
+        }
+
+        try {
+            $stream = $this->mediaStorage->readStream($catalogImage->image_url);
+            $contentType = $this->mediaStorage->contentTypeForStoredValue($catalogImage->image_url);
+        } catch (Throwable $exception) {
+            Log::warning('seller.catalog-images.file: failed', [
+                'catalog_image_id' => $catalogImage->id,
+                'message' => $exception->getMessage(),
+            ]);
+            abort(404);
+        }
+
+        return response()->stream(function () use ($stream): void {
+            fpassthru($stream);
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }, 200, [
+            'Content-Type' => $contentType,
+            'Cache-Control' => 'private, max-age=3600',
+        ]);
     }
 
     public function destroy(Request $request, CatalogImage $catalogImage): JsonResponse

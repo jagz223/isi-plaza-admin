@@ -3,7 +3,6 @@
 namespace App\Http\Resources\Seller;
 
 use App\Models\CatalogImage;
-use App\Support\MediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,7 +18,7 @@ class CatalogImageResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'image_url' => MediaUrl::resolve($this->image_url),
+            'image_url' => route('api.seller.catalog-images.file', $this->id, absolute: true),
             'display_order' => $this->display_order,
         ];
     }

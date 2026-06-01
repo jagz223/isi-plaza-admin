@@ -65,6 +65,7 @@ Route::prefix('v1/seller')->group(function (): void {
 
             Route::get('catalog-images', [CatalogImageController::class, 'index'])->name('api.seller.catalog-images.index');
             Route::post('catalog-images', [CatalogImageController::class, 'store'])->name('api.seller.catalog-images.store');
+            Route::get('catalog-images/{catalogImage}/file', [CatalogImageController::class, 'file'])->name('api.seller.catalog-images.file');
             Route::delete('catalog-images/{catalogImage}', [CatalogImageController::class, 'destroy'])->name('api.seller.catalog-images.destroy');
 
             Route::get('metrics', [MetricsController::class, 'index'])->name('api.seller.metrics.index');

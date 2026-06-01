@@ -147,6 +147,17 @@ it('sube imagen de catálogo con multipart y persiste en catalog_images', functi
     expect($stored)->not->toBeNull()
         ->and(CatalogImage::query()->count())->toBe(1)
         ->and($stored->image_url)->toStartWith('https://firebasestorage.googleapis.com/');
+
+    $imageId = $stored->id;
+    $filePath = "/api/v1/seller/catalog-images/{$imageId}/file";
+
+    $this->getJson('/api/v1/seller/catalog-images', sellerAuth($user))
+        ->assertSuccessful()
+        ->assertJsonPath('data.0.image_url', fn (string $url): bool => str_contains($url, $filePath));
+
+    $this->get($filePath, sellerAuth($user))
+        ->assertSuccessful()
+        ->assertHeader('content-type', 'image/jpeg');
 });
 
 it('devuelve métricas del último mes', function (): void {

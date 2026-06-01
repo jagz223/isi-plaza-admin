@@ -6,13 +6,18 @@ use App\Contracts\MediaStorage;
 use App\Support\PublicStorageUrl;
 use Google\Cloud\Storage\Bucket;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Kreait\Laravel\Firebase\Facades\Firebase;
 use RuntimeException;
+use Throwable;
 
 class FirebaseMediaStorage implements MediaStorage
 {
+    /** URLs firmadas para lectura en la app (las reglas de Storage suelen bloquear GET público). */
+    private const SignedUrlTtlDays = 7;
+
     public function uploadUploadedFile(UploadedFile $file, string $objectPath): string
     {
         $bucket = $this->bucket();
@@ -23,8 +28,8 @@ class FirebaseMediaStorage implements MediaStorage
             fopen($file->getRealPath(), 'r'),
             [
                 'name' => $objectPath,
+                'contentType' => $file->getMimeType() ?: 'application/octet-stream',
                 'metadata' => [
-                    'contentType' => $file->getMimeType() ?: 'application/octet-stream',
                     'firebaseStorageDownloadTokens' => $token,
                 ],
             ]
@@ -59,10 +64,49 @@ class FirebaseMediaStorage implements MediaStorage
         }
 
         if (str_starts_with($storedValue, 'http://') || str_starts_with($storedValue, 'https://')) {
+            if (str_contains($storedValue, 'firebasestorage.googleapis.com')) {
+                return $this->resolveFirebaseDownloadUrl($storedValue);
+            }
+
             return $storedValue;
         }
 
         return PublicStorageUrl::forPath($storedValue);
+    }
+
+    /**
+     * Genera URL firmada con la cuenta de servicio (evita 403 por reglas de Storage).
+     * En BD se sigue guardando la URL con token de Firebase; solo la respuesta API usa firma fresca.
+     */
+    private function resolveFirebaseDownloadUrl(string $storedUrl): string
+    {
+        $objectPath = $this->objectPathFromFirebaseUrl($storedUrl);
+
+        if ($objectPath === null) {
+            return $storedUrl;
+        }
+
+        try {
+            $object = $this->bucket()->object($objectPath);
+
+            if (! $object->exists()) {
+                Log::warning('firebase.resolveUrl: object not found', ['path' => $objectPath]);
+
+                return $storedUrl;
+            }
+
+            return $object->signedUrl(
+                new \DateTimeImmutable('+'.self::SignedUrlTtlDays.' days'),
+                ['version' => 'v4'],
+            );
+        } catch (Throwable $exception) {
+            Log::warning('firebase.resolveUrl: signed url failed', [
+                'path' => $objectPath,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return $storedUrl;
+        }
     }
 
     public function downloadUrl(string $bucketName, string $objectPath, string $token): string
@@ -89,6 +133,36 @@ class FirebaseMediaStorage implements MediaStorage
     private function bucketName(): string
     {
         return (string) config('firebase.projects.app.storage.default_bucket');
+    }
+
+    public function readStream(string $storedValue)
+    {
+        $objectPath = $this->objectPathFromFirebaseUrl($storedValue);
+
+        if ($objectPath === null) {
+            throw new RuntimeException('No se pudo resolver la ruta del archivo en Storage.');
+        }
+
+        $object = $this->bucket()->object($objectPath);
+
+        if (! $object->exists()) {
+            throw new RuntimeException('El archivo no existe en Storage.');
+        }
+
+        return $object->downloadAsStream()->detach();
+    }
+
+    public function contentTypeForStoredValue(string $storedValue): string
+    {
+        $objectPath = $this->objectPathFromFirebaseUrl($storedValue);
+
+        if ($objectPath === null) {
+            return 'application/octet-stream';
+        }
+
+        $info = $this->bucket()->object($objectPath)->info();
+
+        return $info['contentType'] ?? 'image/jpeg';
     }
 
     private function objectPathFromFirebaseUrl(string $url): ?string
