@@ -8,10 +8,12 @@ use App\Http\Controllers\Api\Admin\StatsController;
 use App\Http\Controllers\Api\Consumer\AuthController as ConsumerAuthController;
 use App\Http\Controllers\Api\Consumer\BannerController as ConsumerBannerController;
 use App\Http\Controllers\Api\Consumer\BusinessCategoryController as ConsumerBusinessCategoryController;
+use App\Http\Controllers\Api\Consumer\CatalogImageController as ConsumerCatalogImageController;
 use App\Http\Controllers\Api\Consumer\FavoriteController as ConsumerFavoriteController;
 use App\Http\Controllers\Api\Consumer\FilterController as ConsumerFilterController;
 use App\Http\Controllers\Api\Consumer\InteractionController as ConsumerInteractionController;
 use App\Http\Controllers\Api\Consumer\SellerController as ConsumerSellerController;
+use App\Http\Controllers\Api\Consumer\SellerDocumentController as ConsumerSellerDocumentController;
 use App\Http\Controllers\Api\Seller\AuthController as SellerAuthController;
 use App\Http\Controllers\Api\Seller\BusinessCategoryController;
 use App\Http\Controllers\Api\Seller\CatalogImageController;
@@ -95,6 +97,12 @@ Route::prefix('v1/consumer')->group(function (): void {
     Route::middleware(['sanctum.optional'])->group(function (): void {
         Route::get('sellers', [ConsumerSellerController::class, 'index'])->name('api.consumer.sellers.index');
         Route::get('sellers/{seller}', [ConsumerSellerController::class, 'show'])->name('api.consumer.sellers.show');
+        Route::get('sellers/{seller}/catalog-images/{catalogImage}/file', [ConsumerCatalogImageController::class, 'file'])
+            ->name('api.consumer.sellers.catalog-images.file');
+        Route::get('sellers/{seller}/pdf/file', [ConsumerSellerDocumentController::class, 'pdf'])
+            ->name('api.consumer.sellers.pdf.file');
+        Route::get('sellers/{seller}/excel/file', [ConsumerSellerDocumentController::class, 'excel'])
+            ->name('api.consumer.sellers.excel.file');
         Route::post('sellers/{seller}/interactions', [ConsumerInteractionController::class, 'store'])->name('api.consumer.sellers.interactions.store');
     });
 

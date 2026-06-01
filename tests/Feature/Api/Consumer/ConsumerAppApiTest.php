@@ -91,12 +91,32 @@ it('muestra detalle de mayorista activo', function (): void {
         'access_status' => AccessStatus::Active,
         'whatsapp' => '+525512345678',
         'description' => 'Descripción pública',
+        'carousel_metadata' => [
+            ['title' => 'Ropa hombre', 'description' => 'Tallas medianas'],
+        ],
     ]);
 
     $this->getJson('/api/v1/consumer/sellers/'.$seller->id)
         ->assertSuccessful()
         ->assertJsonPath('data.name', 'Detalle Mayorista')
-        ->assertJsonPath('data.whatsapp', '+525512345678');
+        ->assertJsonPath('data.whatsapp', '+525512345678')
+        ->assertJsonPath('data.carousel_metadata.0.title', 'Ropa hombre')
+        ->assertJsonStructure(['data' => ['pdf_url', 'excel_url', 'catalog_images']]);
+});
+
+it('expone urls de descarga de documentos en el detalle', function (): void {
+    $seller = User::factory()->mayorista()->create();
+    SellerProfile::query()->create([
+        'user_id' => $seller->id,
+        'access_status' => AccessStatus::Active,
+        'pdf_url' => 'https://firebasestorage.googleapis.com/v0/b/test/o/catalog.pdf?alt=media',
+        'excel_url' => 'https://firebasestorage.googleapis.com/v0/b/test/o/catalog.xlsx?alt=media',
+    ]);
+
+    $this->getJson('/api/v1/consumer/sellers/'.$seller->id)
+        ->assertSuccessful()
+        ->assertJsonPath('data.pdf_url', fn (string $url): bool => str_contains($url, '/sellers/'.$seller->id.'/pdf/file'))
+        ->assertJsonPath('data.excel_url', fn (string $url): bool => str_contains($url, '/sellers/'.$seller->id.'/excel/file'));
 });
 
 it('registra favorito y lista guardados', function (): void {

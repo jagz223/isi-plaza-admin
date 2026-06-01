@@ -36,15 +36,35 @@ class FilterController extends Controller
             'country' => ['required', 'string', 'max:100'],
         ]);
 
-        $states = ConsumerSellerQuery::visibleSellers()
+        $rawStates = ConsumerSellerQuery::visibleSellers()
             ->join('seller_profiles', 'users.id', '=', 'seller_profiles.user_id')
             ->where('seller_profiles.country', $request->string('country'))
             ->whereNotNull('seller_profiles.state')
             ->distinct()
-            ->orderBy('seller_profiles.state')
             ->pluck('seller_profiles.state')
-            ->filter()
-            ->values();
+            ->filter();
+
+        $expanded = [];
+        foreach ($rawStates as $state) {
+            $value = (string) $state;
+            if (str_starts_with(trim($value), '[')) {
+                $decoded = json_decode($value, true);
+                if (is_array($decoded)) {
+                    foreach ($decoded as $item) {
+                        if (is_string($item) && $item !== '') {
+                            $expanded[] = $item;
+                        }
+                    }
+
+                    continue;
+                }
+            }
+            if ($value !== '') {
+                $expanded[] = $value;
+            }
+        }
+
+        $states = collect($expanded)->unique()->sort()->values();
 
         return response()->json([
             'country' => $request->string('country'),

@@ -35,6 +35,13 @@ class ConsumerSellerDetailResource extends JsonResource
             'instagram' => $profile?->instagram,
             'facebook' => $profile?->facebook,
             'website' => $profile?->website,
+            'pdf_url' => $profile?->pdf_url
+                ? route('api.consumer.sellers.pdf.file', ['seller' => $this->id], absolute: true)
+                : null,
+            'excel_url' => $profile?->excel_url
+                ? route('api.consumer.sellers.excel.file', ['seller' => $this->id], absolute: true)
+                : null,
+            'carousel_metadata' => $profile?->carousel_metadata ?? [],
             'is_verified' => (bool) ($profile?->is_verified),
             'has_active_promotion' => (bool) ($profile?->has_paid_promotion),
             'business_category' => $profile?->relationLoaded('businessCategory') && $profile->businessCategory !== null
@@ -44,9 +51,16 @@ class ConsumerSellerDetailResource extends JsonResource
                     'slug' => $profile->businessCategory->slug,
                 ]
                 : null,
-            'catalog_images' => ConsumerCatalogImageResource::collection(
-                $profile?->catalogImages ?? []
-            ),
+            'catalog_images' => collect($profile?->catalogImages ?? [])->map(
+                fn ($image) => [
+                    'id' => $image->id,
+                    'image_url' => route('api.consumer.sellers.catalog-images.file', [
+                        'seller' => $this->id,
+                        'catalogImage' => $image->id,
+                    ], absolute: true),
+                    'display_order' => $image->display_order,
+                ]
+            )->values(),
             'is_favorited' => $this->isFavorited,
         ];
     }
