@@ -126,6 +126,33 @@ it('persiste perfil con PATCH json y GET profile devuelve los mismos valores', f
         ->and($row->country)->toBe('México');
 });
 
+it('persiste y devuelve carousel_metadata en el perfil', function (): void {
+    $user = User::factory()->mayorista()->create();
+    SellerProfile::query()->create([
+        'user_id' => $user->id,
+        'access_status' => AccessStatus::Active,
+    ]);
+
+    $categoryId = BusinessCategory::query()->value('id');
+    $carousel = [
+        ['title' => 'PC', 'description' => 'PC a vender'],
+        ['title' => 'Periféricos', 'description' => 'Mouse y teclado'],
+    ];
+
+    $this->patchJson('/api/v1/seller/profile', [
+        'business_category_id' => $categoryId,
+        'carousel_metadata' => $carousel,
+    ], sellerAuth($user))
+        ->assertSuccessful()
+        ->assertJsonPath('data.seller_profile.carousel_metadata.0.title', 'PC')
+        ->assertJsonPath('data.seller_profile.carousel_metadata.1.description', 'Mouse y teclado');
+
+    $this->getJson('/api/v1/seller/profile', sellerAuth($user))
+        ->assertSuccessful()
+        ->assertJsonPath('data.seller_profile.carousel_metadata.0.title', 'PC')
+        ->assertJsonPath('data.seller_profile.carousel_metadata.1.title', 'Periféricos');
+});
+
 it('sube imagen de catálogo con multipart y persiste en catalog_images', function (): void {
     $user = User::factory()->mayorista()->create();
     SellerProfile::query()->create([

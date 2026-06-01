@@ -36,6 +36,7 @@ class SellerProfileResource extends JsonResource
             'instagram' => $this->instagram,
             'facebook' => $this->facebook,
             'website' => $this->website,
+            'carousel_metadata' => $this->carousel_metadata ?? [],
             'is_verified' => $this->is_verified,
             'has_paid_promotion' => $this->has_paid_promotion,
             'has_active_promotion' => $this->has_paid_promotion,
