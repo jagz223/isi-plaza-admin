@@ -6,6 +6,8 @@ PORT="${PORT:-10000}"
 if [ -n "$FIREBASE_SERVICE_ACCOUNT_JSON" ]; then
   mkdir -p storage/app/firebase
   printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > storage/app/firebase/service-account.json
+  php -r 'exit(json_decode(file_get_contents("storage/app/firebase/service-account.json")) ? 0 : 1);' \
+    || { echo "FIREBASE_SERVICE_ACCOUNT_JSON no es JSON válido" >&2; exit 1; }
   export FIREBASE_CREDENTIALS=storage/app/firebase/service-account.json
 fi
 

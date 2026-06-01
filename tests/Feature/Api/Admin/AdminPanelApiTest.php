@@ -5,7 +5,6 @@ use App\Models\Banner;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 beforeEach(function (): void {
@@ -74,8 +73,6 @@ it('actualiza el perfil de un vendedor', function (): void {
 
 it('crea un banner con imagen', function (): void {
     /** @var TestCase $this */
-    Storage::fake('public');
-
     $file = UploadedFile::fake()->image('banner.jpg', 800, 200);
 
     $this->post(
@@ -88,7 +85,10 @@ it('crea un banner con imagen', function (): void {
         adminAuthHeaders()
     )->assertCreated();
 
-    expect(Banner::query()->count())->toBe(1);
+    $banner = Banner::query()->first();
+    expect($banner)->not->toBeNull()
+        ->and(Banner::query()->count())->toBe(1)
+        ->and($banner->image_url)->toStartWith('https://firebasestorage.googleapis.com/');
 });
 
 it('crea un token de panel y devuelve el texto plano una vez', function (): void {

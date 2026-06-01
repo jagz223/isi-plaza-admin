@@ -3,9 +3,9 @@
 namespace App\Http\Resources\Admin;
 
 use App\Models\Banner;
+use App\Support\MediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * @mixin Banner
@@ -19,14 +19,11 @@ class BannerResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'image_path' => $this->image_path,
-            'image_url' => $this->image_path
-                ? Storage::disk('public')->url($this->image_path)
-                : null,
+            'image_url' => MediaUrl::resolve($this->image_url),
             'sort_order' => $this->sort_order,
             'is_active' => $this->is_active,
-            'clicks_count' => $this->clicks_count,
             'link_url' => $this->link_url,
+            'clicks_count' => $this->clicks_count,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

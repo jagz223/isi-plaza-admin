@@ -3,9 +3,9 @@
 namespace App\Http\Resources\Consumer;
 
 use App\Models\User;
+use App\Support\MediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * @mixin User
@@ -33,9 +33,7 @@ class ConsumerSellerListResource extends JsonResource
             'description' => $profile?->description,
             'country' => $profile?->country,
             'state' => $profile?->state,
-            'avatar_url' => $profile?->avatar_path
-                ? Storage::disk('public')->url($profile->avatar_path)
-                : null,
+            'avatar_url' => MediaUrl::resolve($profile?->avatar_url),
             'is_verified' => (bool) ($profile?->is_verified),
             'has_active_promotion' => (bool) ($profile?->has_paid_promotion),
             'business_category' => $profile?->relationLoaded('businessCategory') && $profile->businessCategory !== null

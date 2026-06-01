@@ -141,7 +141,7 @@ it('registra eventos de interacción para métricas del mayorista', function ():
 
 it('lista banners activos e incrementa clics', function (): void {
     $banner = Banner::query()->create([
-        'image_path' => 'banners/test.jpg',
+        'image_url' => 'https://firebasestorage.googleapis.com/v0/b/test.firebasestorage.app/o/banners%2Ftest.jpg?alt=media&token=test',
         'sort_order' => 1,
         'is_active' => true,
         'clicks_count' => 0,

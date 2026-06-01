@@ -9,7 +9,7 @@ class CatalogImage extends Model
 {
     protected $fillable = [
         'seller_profile_id',
-        'image_path',
+        'image_url',
         'display_order',
     ];
 

@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers\Api\Seller;
 
+use App\Contracts\MediaStorage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Seller\UpdateSellerProfileRequest;
 use App\Http\Resources\Seller\SellerAccountResource;
 use App\Models\SellerProfile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
+    public function __construct(private MediaStorage $mediaStorage) {}
+
     public function show(Request $request): SellerAccountResource
     {
         $user = $request->user()->load(['sellerProfile.businessCategory', 'sellerProfile.catalogImages']);
@@ -49,37 +51,32 @@ class ProfileController extends Controller
             'files_meta' => self::describeUploadedFiles($request),
         ]);
 
-        Log::info('seller.profile.update: before', [
-            'seller_profile_id' => $profile->id,
-            'table' => $profile->getTable(),
-            'business_category_id' => $profile->business_category_id,
-            'description' => $profile->description,
-            'country' => $profile->country,
-            'state' => $profile->state,
-            'whatsapp' => $profile->whatsapp,
-        ]);
-
         $data = $request->safe()->except(['avatar', 'pdf', 'excel']);
 
         if ($request->hasFile('avatar')) {
-            if ($profile->avatar_path) {
-                Storage::disk('public')->delete($profile->avatar_path);
-            }
-            $data['avatar_path'] = $request->file('avatar')->store('seller-avatars', 'public');
+            $this->mediaStorage->deleteByStoredValue($profile->avatar_url);
+            $extension = $request->file('avatar')->guessExtension() ?: 'jpg';
+            $data['avatar_url'] = $this->mediaStorage->uploadUploadedFile(
+                $request->file('avatar'),
+                "sellers/{$user->id}/avatar.{$extension}"
+            );
         }
 
         if ($request->hasFile('pdf')) {
-            if ($profile->pdf_path) {
-                Storage::disk('public')->delete($profile->pdf_path);
-            }
-            $data['pdf_path'] = $request->file('pdf')->store('seller-documents', 'public');
+            $this->mediaStorage->deleteByStoredValue($profile->pdf_url);
+            $data['pdf_url'] = $this->mediaStorage->uploadUploadedFile(
+                $request->file('pdf'),
+                "sellers/{$user->id}/documents/catalog.pdf"
+            );
         }
 
         if ($request->hasFile('excel')) {
-            if ($profile->excel_path) {
-                Storage::disk('public')->delete($profile->excel_path);
-            }
-            $data['excel_path'] = $request->file('excel')->store('seller-documents', 'public');
+            $this->mediaStorage->deleteByStoredValue($profile->excel_url);
+            $extension = $request->file('excel')->guessExtension() ?: 'xlsx';
+            $data['excel_url'] = $this->mediaStorage->uploadUploadedFile(
+                $request->file('excel'),
+                "sellers/{$user->id}/documents/catalog.{$extension}"
+            );
         }
 
         if ($data === []) {
@@ -89,20 +86,13 @@ class ProfileController extends Controller
             ]);
         }
 
-        $saved = $profile->update($data);
-
+        $profile->update($data);
         $profile->refresh();
 
         Log::info('seller.profile.update: after', [
             'user_id' => $user->id,
             'seller_profile_id' => $profile->id,
-            'update_returned' => $saved,
-            'business_category_id' => $profile->business_category_id,
-            'description' => $profile->description,
-            'country' => $profile->country,
-            'state' => $profile->state,
-            'whatsapp' => $profile->whatsapp,
-            'avatar_path' => $profile->avatar_path,
+            'avatar_url' => $profile->avatar_url,
         ]);
 
         return SellerAccountResource::make(

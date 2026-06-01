@@ -3,9 +3,9 @@
 namespace App\Http\Resources\Consumer;
 
 use App\Models\CatalogImage;
+use App\Support\MediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * @mixin CatalogImage
@@ -19,7 +19,7 @@ class ConsumerCatalogImageResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'image_url' => Storage::disk('public')->url($this->image_path),
+            'image_url' => MediaUrl::resolve($this->image_url),
             'display_order' => $this->display_order,
         ];
     }

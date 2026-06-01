@@ -3,9 +3,9 @@
 namespace App\Http\Resources\Consumer;
 
 use App\Models\Banner;
+use App\Support\MediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * @mixin Banner
@@ -19,9 +19,7 @@ class ConsumerBannerResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'image_url' => $this->image_path
-                ? Storage::disk('public')->url($this->image_path)
-                : null,
+            'image_url' => MediaUrl::resolve($this->image_url),
             'sort_order' => $this->sort_order,
             'link_url' => $this->link_url,
         ];

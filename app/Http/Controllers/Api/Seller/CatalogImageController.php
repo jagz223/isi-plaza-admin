@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Seller;
 
+use App\Contracts\MediaStorage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Seller\StoreCatalogImageRequest;
 use App\Http\Resources\Seller\CatalogImageResource;
@@ -10,10 +11,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Throwable;
 
 class CatalogImageController extends Controller
 {
+    public function __construct(private MediaStorage $mediaStorage) {}
+
     public function index(Request $request): AnonymousResourceCollection
     {
         $profile = $request->user()->sellerProfile;
@@ -32,18 +36,8 @@ class CatalogImageController extends Controller
 
         Log::info('seller.catalog-images.store: request', [
             'user_id' => $user->id,
-            'content_type' => $request->header('Content-Type'),
-            'payload_keys' => array_keys($request->except(['image'])),
-            'validated' => $request->validated(),
             'has_image_file' => $request->hasFile('image'),
-            'all_file_keys' => array_keys($request->allFiles()),
-            'image_meta' => $request->hasFile('image') ? [
-                'original_name' => $request->file('image')->getClientOriginalName(),
-                'size' => $request->file('image')->getSize(),
-                'mime_type' => $request->file('image')->getMimeType(),
-                'is_valid' => $request->file('image')->isValid(),
-                'error' => $request->file('image')->getError(),
-            ] : null,
+            'display_order' => $request->integer('display_order', 1),
         ]);
 
         if ($profile === null) {
@@ -54,8 +48,9 @@ class CatalogImageController extends Controller
             ], 422);
         }
 
-        $maxTotal = 25;
-        $maxPerCarousel = 5;
+        $maxTotal = (int) config('isi-plaza.seller.catalog_max_images_total', 25);
+        $maxPerCarousel = (int) config('isi-plaza.seller.catalog_max_images_per_carousel', 5);
+        $carouselCount = (int) config('isi-plaza.seller.catalog_carousel_count', 5);
 
         if ($profile->catalogImages()->count() >= $maxTotal) {
             return response()->json([
@@ -64,7 +59,7 @@ class CatalogImageController extends Controller
         }
 
         $displayOrder = $request->integer('display_order', 1);
-        $displayOrder = min(max($displayOrder, 1), 5); // 5 carousels max
+        $displayOrder = min(max($displayOrder, 1), $carouselCount);
 
         $imagesInCurrentCarousel = $profile->catalogImages()->where('display_order', $displayOrder)->count();
         if ($imagesInCurrentCarousel >= $maxPerCarousel) {
@@ -73,21 +68,35 @@ class CatalogImageController extends Controller
             ], 422);
         }
 
-        $path = $request->file('image')->store('catalog', 'public');
+        $extension = $request->file('image')->guessExtension() ?: 'jpg';
+        $objectPath = sprintf('sellers/%d/catalog/%s.%s', $user->id, Str::uuid(), $extension);
 
-        $image = CatalogImage::query()->create([
-            'seller_profile_id' => $profile->id,
-            'image_path' => $path,
-            'display_order' => $displayOrder,
-        ]);
+        try {
+            $imageUrl = $this->mediaStorage->uploadUploadedFile($request->file('image'), $objectPath);
+
+            $image = CatalogImage::query()->create([
+                'seller_profile_id' => $profile->id,
+                'image_url' => $imageUrl,
+                'display_order' => $displayOrder,
+            ]);
+        } catch (Throwable $exception) {
+            Log::error('seller.catalog-images.store: failed', [
+                'user_id' => $user->id,
+                'display_order' => $displayOrder,
+                'exception' => $exception::class,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'No se pudo guardar la imagen en el almacenamiento. Intenta de nuevo o contacta soporte.',
+            ], 503);
+        }
 
         Log::info('seller.catalog-images.store: saved', [
             'user_id' => $user->id,
             'catalog_image_id' => $image->id,
-            'seller_profile_id' => $profile->id,
-            'image_path' => $path,
+            'image_url' => $imageUrl,
             'display_order' => $displayOrder,
-            'image_url' => Storage::disk('public')->url($path),
         ]);
 
         return CatalogImageResource::make($image)->response()->setStatusCode(201);
@@ -101,7 +110,7 @@ class CatalogImageController extends Controller
             abort(404);
         }
 
-        Storage::disk('public')->delete($catalogImage->image_path);
+        $this->mediaStorage->deleteByStoredValue($catalogImage->image_url);
         $catalogImage->delete();
 
         return response()->json(null, 204);

@@ -11,7 +11,6 @@ use App\Models\User;
 use Database\Seeders\BusinessCategorySeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 
 beforeEach(function (): void {
@@ -74,7 +73,6 @@ it('bloquea perfil hasta que el admin active el acceso', function (): void {
 });
 
 it('permite dar de alta el perfil con acceso activo', function (): void {
-    Storage::fake('public');
     $user = User::factory()->mayorista()->create();
     $profile = SellerProfile::query()->create([
         'user_id' => $user->id,
@@ -88,7 +86,7 @@ it('permite dar de alta el perfil con acceso activo', function (): void {
         'business_category_id' => $categoryId,
         'description' => 'Perfil de prueba',
         'country' => 'México',
-        'state' => 'Jalisco',
+        'state' => ['Jalisco'],
         'whatsapp' => '+525512345678',
     ], sellerAuth($user))->assertSuccessful()
         ->assertJsonPath('data.seller_profile.description', 'Perfil de prueba');
@@ -109,7 +107,7 @@ it('persiste perfil con PATCH json y GET profile devuelve los mismos valores', f
         'business_category_id' => $categoryId,
         'description' => 'Descripción guardada',
         'country' => 'México',
-        'state' => 'Nuevo León',
+        'state' => ['Nuevo León'],
     ];
 
     $this->patchJson('/api/v1/seller/profile', $payload, sellerAuth($user))
@@ -119,7 +117,7 @@ it('persiste perfil con PATCH json y GET profile devuelve los mismos valores', f
     $this->getJson('/api/v1/seller/profile', sellerAuth($user))
         ->assertSuccessful()
         ->assertJsonPath('data.seller_profile.description', 'Descripción guardada')
-        ->assertJsonPath('data.seller_profile.state', 'Nuevo León')
+        ->assertJsonPath('data.seller_profile.state', ['Nuevo León'])
         ->assertJsonPath('data.seller_profile.business_category.id', $categoryId);
 
     $row = SellerProfile::query()->where('user_id', $user->id)->first();
@@ -129,7 +127,6 @@ it('persiste perfil con PATCH json y GET profile devuelve los mismos valores', f
 });
 
 it('sube imagen de catálogo con multipart y persiste en catalog_images', function (): void {
-    Storage::fake('public');
     $user = User::factory()->mayorista()->create();
     SellerProfile::query()->create([
         'user_id' => $user->id,
@@ -146,7 +143,10 @@ it('sube imagen de catálogo con multipart y persiste en catalog_images', functi
         ->assertJsonStructure(['data' => ['id', 'image_url', 'display_order']])
         ->assertJsonPath('data.display_order', 2);
 
-    expect(CatalogImage::query()->count())->toBe(1);
+    $stored = CatalogImage::query()->first();
+    expect($stored)->not->toBeNull()
+        ->and(CatalogImage::query()->count())->toBe(1)
+        ->and($stored->image_url)->toStartWith('https://firebasestorage.googleapis.com/');
 });
 
 it('devuelve métricas del último mes', function (): void {

@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\IsiPlaza;
 
+use App\Contracts\MediaStorage;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Admin\StoreBannerRequest;
 use App\Http\Requests\Api\Admin\UpdateBannerRequest;
 use App\Models\Banner;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class BannersPanelController extends Controller
 {
+    public function __construct(private MediaStorage $mediaStorage) {}
+
     public function index(): RedirectResponse
     {
         return redirect()->route('isi-plaza.gestion');
@@ -18,10 +21,14 @@ class BannersPanelController extends Controller
 
     public function store(StoreBannerRequest $request): RedirectResponse
     {
-        $path = $request->file('image')->store('banners', 'public');
+        $extension = $request->file('image')->guessExtension() ?: 'jpg';
+        $imageUrl = $this->mediaStorage->uploadUploadedFile(
+            $request->file('image'),
+            'banners/'.Str::uuid().'.'.$extension
+        );
 
         Banner::query()->create([
-            'image_path' => $path,
+            'image_url' => $imageUrl,
             'sort_order' => $request->integer('sort_order', 0),
             'is_active' => $request->boolean('is_active', true),
             'link_url' => $request->input('link_url'),
@@ -33,10 +40,12 @@ class BannersPanelController extends Controller
     public function update(UpdateBannerRequest $request, Banner $banner): RedirectResponse
     {
         if ($request->hasFile('image')) {
-            if ($banner->image_path) {
-                Storage::disk('public')->delete($banner->image_path);
-            }
-            $banner->image_path = $request->file('image')->store('banners', 'public');
+            $this->mediaStorage->deleteByStoredValue($banner->image_url);
+            $extension = $request->file('image')->guessExtension() ?: 'jpg';
+            $banner->image_url = $this->mediaStorage->uploadUploadedFile(
+                $request->file('image'),
+                'banners/'.Str::uuid().'.'.$extension
+            );
         }
 
         if ($request->has('sort_order')) {
@@ -55,9 +64,7 @@ class BannersPanelController extends Controller
 
     public function destroy(Banner $banner): RedirectResponse
     {
-        if ($banner->image_path) {
-            Storage::disk('public')->delete($banner->image_path);
-        }
+        $this->mediaStorage->deleteByStoredValue($banner->image_url);
         $banner->delete();
 
         return redirect()->route('isi-plaza.gestion')->with('success', 'Banner eliminado.');

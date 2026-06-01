@@ -13,9 +13,9 @@ class SellerProfile extends Model
     protected $fillable = [
         'user_id',
         'business_category_id',
-        'avatar_path',
-        'pdf_path',
-        'excel_path',
+        'avatar_url',
+        'pdf_url',
+        'excel_url',
         'carousel_metadata',
         'description',
         'country',

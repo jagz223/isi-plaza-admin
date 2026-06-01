@@ -4,9 +4,9 @@ namespace App\Http\Resources\Seller;
 
 use App\Enums\AccessStatus;
 use App\Models\SellerProfile;
+use App\Support\MediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * @mixin SellerProfile
@@ -26,9 +26,9 @@ class SellerProfileResource extends JsonResource
                 'name' => $this->businessCategory?->name,
                 'slug' => $this->businessCategory?->slug,
             ]),
-            'avatar_url' => $this->avatar_path
-                ? Storage::disk('public')->url($this->avatar_path)
-                : null,
+            'avatar_url' => MediaUrl::resolve($this->avatar_url),
+            'pdf_url' => MediaUrl::resolve($this->pdf_url),
+            'excel_url' => MediaUrl::resolve($this->excel_url),
             'description' => $this->description,
             'country' => $this->country,
             'state' => $this->state,

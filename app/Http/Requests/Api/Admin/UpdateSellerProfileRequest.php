@@ -20,7 +20,7 @@ class UpdateSellerProfileRequest extends FormRequest
     {
         return [
             'business_category_id' => ['sometimes', 'nullable', 'exists:business_categories,id'],
-            'avatar_path' => ['sometimes', 'nullable', 'string', 'max:2048'],
+            'avatar_url' => ['sometimes', 'nullable', 'url', 'max:2048'],
             'description' => ['sometimes', 'nullable', 'string', 'max:100'],
             'country' => ['sometimes', 'nullable', 'string', 'max:120'],
             'state' => ['sometimes', 'nullable', 'string', 'max:120'],

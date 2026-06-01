@@ -24,7 +24,7 @@ class SellerProfileResource extends JsonResource
                 'name' => $this->businessCategory?->name,
                 'slug' => $this->businessCategory?->slug,
             ]),
-            'avatar_path' => $this->avatar_path,
+            'avatar_url' => $this->avatar_url,
             'description' => $this->description,
             'country' => $this->country,
             'state' => $this->state,
