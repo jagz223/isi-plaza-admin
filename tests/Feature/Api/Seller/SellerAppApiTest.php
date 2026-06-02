@@ -225,6 +225,44 @@ it('muestra ajustes con fecha de suscripción', function (): void {
         ]);
 });
 
+it('bloquea subir imagen de catálogo si hay PDF', function (): void {
+    $user = User::factory()->mayorista()->create();
+    SellerProfile::query()->create([
+        'user_id' => $user->id,
+        'access_status' => AccessStatus::Active,
+        'pdf_url' => 'https://firebasestorage.googleapis.com/v0/b/test/o/catalog.pdf?alt=media',
+    ]);
+
+    $file = UploadedFile::fake()->image('catalog.jpg', 400, 400);
+
+    $this->post('/api/v1/seller/catalog-images', [
+        'image' => $file,
+        'display_order' => 1,
+    ], sellerAuth($user))
+        ->assertStatus(422)
+        ->assertJsonPath('message', 'Elimina el PDF o el Excel antes de subir imágenes al carrusel.');
+});
+
+it('elimina PDF de catálogo y permite volver a subir carrusel', function (): void {
+    $user = User::factory()->mayorista()->create();
+    SellerProfile::query()->create([
+        'user_id' => $user->id,
+        'access_status' => AccessStatus::Active,
+        'pdf_url' => 'https://firebasestorage.googleapis.com/v0/b/test/o/catalog.pdf?alt=media',
+    ]);
+
+    $this->deleteJson('/api/v1/seller/profile/pdf', [], sellerAuth($user))
+        ->assertSuccessful()
+        ->assertJsonPath('data.seller_profile.pdf_url', null);
+
+    $file = UploadedFile::fake()->image('catalog.jpg', 400, 400);
+
+    $this->post('/api/v1/seller/catalog-images', [
+        'image' => $file,
+        'display_order' => 1,
+    ], sellerAuth($user))->assertCreated();
+});
+
 it('rechaza token de panel admin en rutas seller', function (): void {
     $this->getJson('/api/v1/seller/me', [
         'Authorization' => 'Bearer paneltoken12',

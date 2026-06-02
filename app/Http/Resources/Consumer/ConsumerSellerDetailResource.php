@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Consumer;
 
+use App\Models\SellerProfile;
 use App\Models\User;
 use App\Support\MediaUrl;
 use Illuminate\Http\Request;
@@ -42,6 +43,7 @@ class ConsumerSellerDetailResource extends JsonResource
                 ? route('api.consumer.sellers.excel.file', ['seller' => $this->id], absolute: true)
                 : null,
             'carousel_metadata' => $profile?->carousel_metadata ?? [],
+            'catalog_display_mode' => $this->catalogDisplayMode($profile),
             'is_verified' => (bool) ($profile?->is_verified),
             'has_active_promotion' => (bool) ($profile?->has_paid_promotion),
             'business_category' => $profile?->relationLoaded('businessCategory') && $profile->businessCategory !== null
@@ -63,5 +65,26 @@ class ConsumerSellerDetailResource extends JsonResource
             )->values(),
             'is_favorited' => $this->isFavorited,
         ];
+    }
+
+    private function catalogDisplayMode(?SellerProfile $profile): string
+    {
+        if ($profile === null) {
+            return 'none';
+        }
+
+        if ($profile->pdf_url) {
+            return 'pdf';
+        }
+
+        if ($profile->excel_url) {
+            return 'excel';
+        }
+
+        if ($profile->relationLoaded('catalogImages') && $profile->catalogImages->isNotEmpty()) {
+            return 'carousel';
+        }
+
+        return 'none';
     }
 }

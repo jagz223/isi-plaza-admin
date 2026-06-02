@@ -7,12 +7,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Seller\UpdateSellerProfileRequest;
 use App\Http\Resources\Seller\SellerAccountResource;
 use App\Models\SellerProfile;
+use App\Services\Seller\SellerCatalogModeService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class ProfileController extends Controller
 {
-    public function __construct(private MediaStorage $mediaStorage) {}
+    public function __construct(
+        private MediaStorage $mediaStorage,
+        private SellerCatalogModeService $catalogMode,
+    ) {}
 
     public function show(Request $request): SellerAccountResource
     {
@@ -63,20 +68,24 @@ class ProfileController extends Controller
         }
 
         if ($request->hasFile('pdf')) {
-            $this->mediaStorage->deleteByStoredValue($profile->pdf_url);
-            $data['pdf_url'] = $this->mediaStorage->uploadUploadedFile(
+            $pdfUrl = $this->mediaStorage->uploadUploadedFile(
                 $request->file('pdf'),
                 "sellers/{$user->id}/documents/catalog.pdf"
             );
+            $this->mediaStorage->deleteByStoredValue($profile->pdf_url);
+            $this->catalogMode->applyPdfUpload($profile, $pdfUrl);
+            unset($data['pdf_url']);
         }
 
         if ($request->hasFile('excel')) {
-            $this->mediaStorage->deleteByStoredValue($profile->excel_url);
             $extension = $request->file('excel')->guessExtension() ?: 'xlsx';
-            $data['excel_url'] = $this->mediaStorage->uploadUploadedFile(
+            $excelUrl = $this->mediaStorage->uploadUploadedFile(
                 $request->file('excel'),
                 "sellers/{$user->id}/documents/catalog.{$extension}"
             );
+            $this->mediaStorage->deleteByStoredValue($profile->excel_url);
+            $this->catalogMode->applyExcelUpload($profile, $excelUrl);
+            unset($data['excel_url']);
         }
 
         if ($data === []) {
@@ -94,6 +103,38 @@ class ProfileController extends Controller
             'seller_profile_id' => $profile->id,
             'avatar_url' => $profile->avatar_url,
         ]);
+
+        return SellerAccountResource::make(
+            $user->fresh()->load(['sellerProfile.businessCategory', 'sellerProfile.catalogImages'])
+        );
+    }
+
+    public function destroyPdf(Request $request): SellerAccountResource|JsonResponse
+    {
+        $user = $request->user();
+        $profile = $user->sellerProfile;
+
+        if ($profile === null || $profile->pdf_url === null) {
+            return response()->json(['message' => 'No hay PDF de catálogo para eliminar.'], 404);
+        }
+
+        $this->catalogMode->clearPdf($profile);
+
+        return SellerAccountResource::make(
+            $user->fresh()->load(['sellerProfile.businessCategory', 'sellerProfile.catalogImages'])
+        );
+    }
+
+    public function destroyExcel(Request $request): SellerAccountResource|JsonResponse
+    {
+        $user = $request->user();
+        $profile = $user->sellerProfile;
+
+        if ($profile === null || $profile->excel_url === null) {
+            return response()->json(['message' => 'No hay Excel de catálogo para eliminar.'], 404);
+        }
+
+        $this->catalogMode->clearExcel($profile);
 
         return SellerAccountResource::make(
             $user->fresh()->load(['sellerProfile.businessCategory', 'sellerProfile.catalogImages'])

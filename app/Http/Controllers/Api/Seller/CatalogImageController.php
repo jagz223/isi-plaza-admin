@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Seller\StoreCatalogImageRequest;
 use App\Http\Resources\Seller\CatalogImageResource;
 use App\Models\CatalogImage;
+use App\Services\Seller\SellerCatalogModeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -17,7 +18,10 @@ use Throwable;
 
 class CatalogImageController extends Controller
 {
-    public function __construct(private MediaStorage $mediaStorage) {}
+    public function __construct(
+        private MediaStorage $mediaStorage,
+        private SellerCatalogModeService $catalogMode,
+    ) {}
 
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -46,6 +50,12 @@ class CatalogImageController extends Controller
 
             return response()->json([
                 'message' => 'No existe perfil de mayorista para este usuario.',
+            ], 422);
+        }
+
+        if ($profile->pdf_url || $profile->excel_url) {
+            return response()->json([
+                'message' => 'Elimina el PDF o el Excel antes de subir imágenes al carrusel.',
             ], 422);
         }
 

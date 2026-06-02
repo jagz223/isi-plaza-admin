@@ -64,6 +64,8 @@ Route::prefix('v1/seller')->group(function (): void {
         Route::middleware(['seller.active'])->group(function (): void {
             Route::get('profile', [SellerProfileController::class, 'show'])->name('api.seller.profile.show');
             Route::match(['put', 'patch'], 'profile', [SellerProfileController::class, 'update'])->name('api.seller.profile.update');
+            Route::delete('profile/pdf', [SellerProfileController::class, 'destroyPdf'])->name('api.seller.profile.pdf.destroy');
+            Route::delete('profile/excel', [SellerProfileController::class, 'destroyExcel'])->name('api.seller.profile.excel.destroy');
 
             Route::get('catalog-images', [CatalogImageController::class, 'index'])->name('api.seller.catalog-images.index');
             Route::post('catalog-images', [CatalogImageController::class, 'store'])->name('api.seller.catalog-images.store');

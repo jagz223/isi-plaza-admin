@@ -116,7 +116,34 @@ it('expone urls de descarga de documentos en el detalle', function (): void {
     $this->getJson('/api/v1/consumer/sellers/'.$seller->id)
         ->assertSuccessful()
         ->assertJsonPath('data.pdf_url', fn (string $url): bool => str_contains($url, '/sellers/'.$seller->id.'/pdf/file'))
-        ->assertJsonPath('data.excel_url', fn (string $url): bool => str_contains($url, '/sellers/'.$seller->id.'/excel/file'));
+        ->assertJsonPath('data.excel_url', fn (string $url): bool => str_contains($url, '/sellers/'.$seller->id.'/excel/file'))
+        ->assertJsonPath('data.catalog_display_mode', 'pdf');
+});
+
+it('indica modo de catálogo excel o carrusel en el detalle', function (): void {
+    $excelSeller = User::factory()->mayorista()->create();
+    SellerProfile::query()->create([
+        'user_id' => $excelSeller->id,
+        'access_status' => AccessStatus::Active,
+        'excel_url' => 'https://firebasestorage.googleapis.com/v0/b/test/o/catalog.xlsx?alt=media',
+    ]);
+
+    $this->getJson('/api/v1/consumer/sellers/'.$excelSeller->id)
+        ->assertJsonPath('data.catalog_display_mode', 'excel');
+
+    $carouselSeller = User::factory()->mayorista()->create();
+    $profile = SellerProfile::query()->create([
+        'user_id' => $carouselSeller->id,
+        'access_status' => AccessStatus::Active,
+        'carousel_metadata' => [['title' => 'A', 'description' => 'B']],
+    ]);
+    $profile->catalogImages()->create([
+        'image_url' => 'https://firebasestorage.googleapis.com/v0/b/test/o/img.jpg?alt=media',
+        'display_order' => 1,
+    ]);
+
+    $this->getJson('/api/v1/consumer/sellers/'.$carouselSeller->id)
+        ->assertJsonPath('data.catalog_display_mode', 'carousel');
 });
 
 it('registra favorito y lista guardados', function (): void {
