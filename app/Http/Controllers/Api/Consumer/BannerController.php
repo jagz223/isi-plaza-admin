@@ -17,8 +17,8 @@ class BannerController extends Controller
         $banners = Banner::query()
             ->where('is_active', true)
             ->when($categoryId > 0, fn ($query) => $query->where('business_category_id', $categoryId))
-            ->orderBy('sort_order')
-            ->orderBy('id')
+            ->orderByDesc('sort_order')
+            ->orderByDesc('id')
             ->get();
 
         return response()->json([

@@ -235,6 +235,43 @@ it('lista banners activos e incrementa clics', function (): void {
         ->assertJsonPath('clicks_count', 1);
 });
 
+it('lista banners del rubro ordenados de mayor a menor', function (): void {
+    $categoryId = BusinessCategory::query()->value('id');
+
+    Banner::query()->create([
+        'business_category_id' => $categoryId,
+        'image_url' => 'https://example.com/1.jpg',
+        'sort_order' => 1,
+        'is_active' => true,
+    ]);
+    Banner::query()->create([
+        'business_category_id' => $categoryId,
+        'image_url' => 'https://example.com/2.jpg',
+        'sort_order' => 2,
+        'is_active' => true,
+    ]);
+    Banner::query()->create([
+        'business_category_id' => $categoryId,
+        'image_url' => 'https://example.com/3.jpg',
+        'sort_order' => 3,
+        'is_active' => true,
+    ]);
+    Banner::query()->create([
+        'business_category_id' => $categoryId,
+        'image_url' => 'https://example.com/inactive.jpg',
+        'sort_order' => 4,
+        'is_active' => false,
+    ]);
+
+    $response = $this->getJson('/api/v1/consumer/banners?business_category_id='.$categoryId)
+        ->assertSuccessful()
+        ->assertJsonCount(3, 'data');
+
+    expect($response->json('data.0.sort_order'))->toBe(3)
+        ->and($response->json('data.1.sort_order'))->toBe(2)
+        ->and($response->json('data.2.sort_order'))->toBe(1);
+});
+
 it('rechaza favoritos de un mayorista no activo', function (): void {
     $buyer = User::factory()->create();
     $seller = User::factory()->mayorista()->create();
