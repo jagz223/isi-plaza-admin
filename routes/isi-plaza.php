@@ -32,6 +32,8 @@ Route::prefix('isi-plaza')->name('isi-plaza.')->group(function (): void {
 
         Route::get('banners', [BannersPanelController::class, 'index'])->name('banners.index');
         Route::post('banners', [BannersPanelController::class, 'store'])->name('banners.store');
+        Route::post('banners/{banner}/move-up', [BannersPanelController::class, 'moveUp'])->name('banners.move-up');
+        Route::post('banners/{banner}/move-down', [BannersPanelController::class, 'moveDown'])->name('banners.move-down');
         Route::patch('banners/{banner}', [BannersPanelController::class, 'update'])->name('banners.update');
         Route::delete('banners/{banner}', [BannersPanelController::class, 'destroy'])->name('banners.destroy');
 

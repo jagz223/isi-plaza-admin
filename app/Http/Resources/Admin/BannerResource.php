@@ -19,6 +19,11 @@ class BannerResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'business_category_id' => $this->business_category_id,
+            'business_category' => $this->whenLoaded('businessCategory', fn () => [
+                'id' => $this->businessCategory->id,
+                'name' => $this->businessCategory->name,
+            ]),
             'image_url' => MediaUrl::resolve($this->image_url),
             'sort_order' => $this->sort_order,
             'is_active' => $this->is_active,

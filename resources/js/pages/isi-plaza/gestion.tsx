@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import IsiPlazaLayout from '@/layouts/isi-plaza/isi-plaza-layout';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { BadgeCheck } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface Stats {
     buyers_count: number;
@@ -62,8 +62,15 @@ interface SellerRow {
     created_at: string | null;
 }
 
+interface BusinessCategoryOption {
+    id: number;
+    name: string;
+}
+
 interface BannerRow {
     id: number;
+    business_category_id: number;
+    business_category?: { id: number; name: string } | null;
     image_url: string | null;
     sort_order: number;
     is_active: boolean;
@@ -76,6 +83,7 @@ interface GestionProps {
     buyers: Paginated<BuyerRow>;
     sellers: Paginated<SellerRow>;
     banners: { data: BannerRow[] };
+    businessCategories: BusinessCategoryOption[];
 }
 
 function SubscriptionCountdown({ expiresAt }: { expiresAt: string | null }) {
@@ -280,8 +288,17 @@ function SellerTableRow({ row }: { row: SellerRow }) {
     );
 }
 
-function BannerCard({ banner }: { banner: BannerRow }) {
+function BannerCard({
+    banner,
+    canMoveUp,
+    canMoveDown,
+}: {
+    banner: BannerRow;
+    canMoveUp: boolean;
+    canMoveDown: boolean;
+}) {
     const del = useForm({});
+    const move = useForm({});
 
     return (
         <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
@@ -299,7 +316,29 @@ function BannerCard({ banner }: { banner: BannerRow }) {
                 </p>
                 <p>{banner.is_active ? <span className="font-medium text-emerald-700">Activo</span> : <span>Inactivo</span>}</p>
             </div>
-            <div className="border-t border-neutral-100 p-3">
+            <div className="flex flex-col gap-2 border-t border-neutral-100 p-3">
+                <div className="flex gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        disabled={!canMoveUp || move.processing}
+                        onClick={() => move.post(route('isi-plaza.banners.move-up', banner.id))}
+                    >
+                        ↑ Subir
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        disabled={!canMoveDown || move.processing}
+                        onClick={() => move.post(route('isi-plaza.banners.move-down', banner.id))}
+                    >
+                        ↓ Bajar
+                    </Button>
+                </div>
                 <Button
                     type="button"
                     variant="outline"
@@ -399,16 +438,60 @@ function PaginationLinks({ paginator }: { paginator: Paginated<unknown> }) {
     return null;
 }
 
-export default function IsiPlazaGestion({ stats, buyers, sellers, banners }: GestionProps) {
+export default function IsiPlazaGestion({ stats, buyers, sellers, banners, businessCategories }: GestionProps) {
     const buyerRows = buyers?.data ?? [];
     const sellerRows = sellers?.data ?? [];
     const bannerRows = banners && typeof banners === 'object' && 'data' in banners ? (banners.data ?? []) : [];
+    const categories = businessCategories ?? [];
+
     const createBannerForm = useForm({
+        business_category_id: categories[0]?.id ?? 0,
         image: null as File | null,
-        sort_order: 0,
+        sort_order: 1,
         is_active: true,
         link_url: '',
     });
+
+    const suggestedOrder = useMemo(() => {
+        const categoryId = createBannerForm.data.business_category_id;
+        if (!categoryId) {
+            return 1;
+        }
+        const inCategory = bannerRows.filter((b) => b.business_category_id === categoryId);
+        if (inCategory.length === 0) {
+            return 1;
+        }
+        return Math.max(...inCategory.map((b) => b.sort_order)) + 1;
+    }, [bannerRows, createBannerForm.data.business_category_id]);
+
+    useEffect(() => {
+        createBannerForm.setData('sort_order', suggestedOrder);
+    }, [suggestedOrder]);
+
+    const bannersByCategory = useMemo(() => {
+        const grouped = new Map<number, { name: string; items: BannerRow[] }>();
+
+        for (const category of categories) {
+            grouped.set(category.id, { name: category.name, items: [] });
+        }
+
+        for (const banner of bannerRows) {
+            const name = banner.business_category?.name ?? categories.find((c) => c.id === banner.business_category_id)?.name ?? 'Rubro';
+            const existing = grouped.get(banner.business_category_id);
+            if (existing) {
+                existing.items.push(banner);
+            } else {
+                grouped.set(banner.business_category_id, { name, items: [banner] });
+            }
+        }
+
+        return [...grouped.values()]
+            .map((group) => ({
+                ...group,
+                items: [...group.items].sort((a, b) => a.sort_order - b.sort_order),
+            }))
+            .filter((group) => group.items.length > 0);
+    }, [bannerRows, categories]);
 
     return (
         <IsiPlazaLayout title="Gestión de datos">
@@ -510,6 +593,31 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners }: Ges
                             createBannerForm.post(route('isi-plaza.banners.store'), { forceFormData: true });
                         }}
                     >
+                        <div className="grid min-w-[200px] gap-1">
+                            <Label>
+                                Rubro <span className="text-red-600">*</span>
+                            </Label>
+                            <select
+                                required
+                                className="h-10 rounded-md border border-neutral-300 bg-white px-3 text-sm"
+                                value={createBannerForm.data.business_category_id || ''}
+                                onChange={(e) =>
+                                    createBannerForm.setData('business_category_id', Number(e.target.value))
+                                }
+                            >
+                                <option value="" disabled>
+                                    Seleccionar rubro
+                                </option>
+                                {categories.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.name}
+                                    </option>
+                                ))}
+                            </select>
+                            {createBannerForm.errors.business_category_id && (
+                                <p className="text-xs text-red-600">{createBannerForm.errors.business_category_id}</p>
+                            )}
+                        </div>
                         <div className="grid gap-1">
                             <Label>Imagen</Label>
                             <Input
@@ -528,6 +636,9 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners }: Ges
                                 onChange={(e) => createBannerForm.setData('sort_order', Number(e.target.value))}
                                 className="border-neutral-300"
                             />
+                            {createBannerForm.errors.sort_order && (
+                                <p className="text-xs text-red-600">{createBannerForm.errors.sort_order}</p>
+                            )}
                         </div>
                         <label className="flex items-center gap-2 text-sm">
                             <Checkbox checked={createBannerForm.data.is_active} onCheckedChange={(v) => createBannerForm.setData('is_active', v === true)} />
@@ -545,18 +656,37 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners }: Ges
                         <Button
                             type="submit"
                             className="bg-[#E00000] text-white hover:bg-[#FF0000]"
-                            disabled={createBannerForm.processing || !createBannerForm.data.image}
+                            disabled={
+                                createBannerForm.processing ||
+                                !createBannerForm.data.image ||
+                                !createBannerForm.data.business_category_id
+                            }
                         >
                             Subir al carrusel
                         </Button>
                     </form>
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {bannerRows.map((b) => (
-                        <BannerCard key={b.id} banner={b} />
-                    ))}
-                    {bannerRows.length === 0 && <p className="col-span-full text-center text-neutral-500">No hay banners. Sube uno arriba.</p>}
-                </div>
+                {bannersByCategory.length === 0 ? (
+                    <p className="text-center text-neutral-500">No hay banners. Sube uno arriba.</p>
+                ) : (
+                    <div className="space-y-8">
+                        {bannersByCategory.map((group) => (
+                            <div key={group.name}>
+                                <h3 className="mb-3 text-base font-semibold text-neutral-800">{group.name}</h3>
+                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                    {group.items.map((b, index) => (
+                                        <BannerCard
+                                            key={b.id}
+                                            banner={b}
+                                            canMoveUp={index > 0}
+                                            canMoveDown={index < group.items.length - 1}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </section>
         </IsiPlazaLayout>
     );

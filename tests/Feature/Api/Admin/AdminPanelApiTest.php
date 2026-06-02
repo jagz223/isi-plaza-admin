@@ -2,7 +2,9 @@
 
 use App\Models\AdminToken;
 use App\Models\Banner;
+use App\Models\BusinessCategory;
 use App\Models\User;
+use Database\Seeders\BusinessCategorySeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -73,11 +75,14 @@ it('actualiza el perfil de un vendedor', function (): void {
 
 it('crea un banner con imagen', function (): void {
     /** @var TestCase $this */
+    $this->seed(BusinessCategorySeeder::class);
+    $categoryId = BusinessCategory::query()->value('id');
     $file = UploadedFile::fake()->image('banner.jpg', 800, 200);
 
     $this->post(
         '/api/v1/admin/banners',
         [
+            'business_category_id' => $categoryId,
             'image' => $file,
             'sort_order' => 1,
             'is_active' => true,

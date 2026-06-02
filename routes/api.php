@@ -35,6 +35,8 @@ Route::prefix('v1/admin')->middleware(['admin.token'])->group(function (): void 
 
     Route::get('banners', [BannerController::class, 'index'])->name('api.admin.banners.index');
     Route::post('banners', [BannerController::class, 'store'])->name('api.admin.banners.store');
+    Route::post('banners/{banner}/move-up', [BannerController::class, 'moveUp'])->name('api.admin.banners.move-up');
+    Route::post('banners/{banner}/move-down', [BannerController::class, 'moveDown'])->name('api.admin.banners.move-down');
     Route::patch('banners/{banner}', [BannerController::class, 'update'])->name('api.admin.banners.update');
     Route::delete('banners/{banner}', [BannerController::class, 'destroy'])->name('api.admin.banners.destroy');
 

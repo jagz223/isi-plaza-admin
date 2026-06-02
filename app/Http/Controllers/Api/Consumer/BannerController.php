@@ -6,13 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Consumer\ConsumerBannerResource;
 use App\Models\Banner;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class BannerController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
+        $categoryId = $request->integer('business_category_id');
+
         $banners = Banner::query()
             ->where('is_active', true)
+            ->when($categoryId > 0, fn ($query) => $query->where('business_category_id', $categoryId))
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();

@@ -7,12 +7,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Admin\StoreBannerRequest;
 use App\Http\Requests\Api\Admin\UpdateBannerRequest;
 use App\Models\Banner;
+use App\Services\Banner\BannerOrderService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 
 class BannersPanelController extends Controller
 {
-    public function __construct(private MediaStorage $mediaStorage) {}
+    public function __construct(
+        private MediaStorage $mediaStorage,
+        private BannerOrderService $bannerOrder,
+    ) {}
 
     public function index(): RedirectResponse
     {
@@ -28,8 +32,9 @@ class BannersPanelController extends Controller
         );
 
         Banner::query()->create([
+            'business_category_id' => $request->integer('business_category_id'),
             'image_url' => $imageUrl,
-            'sort_order' => $request->integer('sort_order', 0),
+            'sort_order' => $request->integer('sort_order'),
             'is_active' => $request->boolean('is_active', true),
             'link_url' => $request->input('link_url'),
         ]);
@@ -48,6 +53,10 @@ class BannersPanelController extends Controller
             );
         }
 
+        if ($request->has('business_category_id')) {
+            $banner->business_category_id = $request->integer('business_category_id');
+        }
+
         if ($request->has('sort_order')) {
             $banner->sort_order = $request->integer('sort_order');
         }
@@ -60,6 +69,20 @@ class BannersPanelController extends Controller
         $banner->save();
 
         return redirect()->route('isi-plaza.gestion')->with('success', 'Banner actualizado.');
+    }
+
+    public function moveUp(Banner $banner): RedirectResponse
+    {
+        $this->bannerOrder->move($banner, 'up');
+
+        return redirect()->route('isi-plaza.gestion')->with('success', 'Orden actualizado.');
+    }
+
+    public function moveDown(Banner $banner): RedirectResponse
+    {
+        $this->bannerOrder->move($banner, 'down');
+
+        return redirect()->route('isi-plaza.gestion')->with('success', 'Orden actualizado.');
     }
 
     public function destroy(Banner $banner): RedirectResponse

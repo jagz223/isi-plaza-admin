@@ -23,4 +23,12 @@ class BusinessCategory extends Model
     {
         return $this->hasMany(SellerProfile::class, 'business_category_id');
     }
+
+    /**
+     * @return HasMany<Banner, $this>
+     */
+    public function banners(): HasMany
+    {
+        return $this->hasMany(Banner::class);
+    }
 }

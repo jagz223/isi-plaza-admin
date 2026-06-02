@@ -12,6 +12,7 @@ use App\Models\SellerProfile;
 use App\Models\User;
 use Database\Seeders\BusinessCategorySeeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 
 beforeEach(function (): void {
@@ -107,7 +108,7 @@ it('muestra detalle de mayorista activo', function (): void {
 it('sirve pdf en línea para vista previa y como adjunto al descargar', function (): void {
     $seller = User::factory()->mayorista()->create();
     $pdfPath = "sellers/{$seller->id}/documents/catalog.pdf";
-    \Illuminate\Support\Facades\Storage::disk('local')->put(
+    Storage::disk('local')->put(
         'firebase-fake/'.$pdfPath,
         '%PDF-1.4 test',
     );
@@ -216,14 +217,16 @@ it('registra eventos de interacción para métricas del mayorista', function ():
 });
 
 it('lista banners activos e incrementa clics', function (): void {
+    $categoryId = BusinessCategory::query()->value('id');
     $banner = Banner::query()->create([
+        'business_category_id' => $categoryId,
         'image_url' => 'https://firebasestorage.googleapis.com/v0/b/test.firebasestorage.app/o/banners%2Ftest.jpg?alt=media&token=test',
         'sort_order' => 1,
         'is_active' => true,
         'clicks_count' => 0,
     ]);
 
-    $this->getJson('/api/v1/consumer/banners')
+    $this->getJson('/api/v1/consumer/banners?business_category_id='.$categoryId)
         ->assertSuccessful()
         ->assertJsonCount(1, 'data');
 
