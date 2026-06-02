@@ -98,7 +98,7 @@ class BannersPanelController extends Controller
     public function destroy(Banner $banner): RedirectResponse
     {
         $this->mediaStorage->deleteByStoredValue($banner->image_url);
-        $banner->delete();
+        $this->bannerOrder->deleteAndCompact($banner);
 
         return redirect()->route('isi-plaza.gestion')->with('success', 'Banner eliminado.');
     }

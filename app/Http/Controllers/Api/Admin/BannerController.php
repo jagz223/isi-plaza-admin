@@ -106,7 +106,7 @@ class BannerController extends Controller
     public function destroy(Banner $banner): JsonResponse
     {
         $this->mediaStorage->deleteByStoredValue($banner->image_url);
-        $banner->delete();
+        $this->bannerOrder->deleteAndCompact($banner);
 
         return response()->json(null, 204);
     }

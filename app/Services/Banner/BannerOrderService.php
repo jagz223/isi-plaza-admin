@@ -72,4 +72,19 @@ class BannerOrderService
             $banner->save();
         });
     }
+
+    public function deleteAndCompact(Banner $banner): void
+    {
+        DB::transaction(function () use ($banner): void {
+            $categoryId = $banner->business_category_id;
+            $deletedOrder = $banner->sort_order;
+
+            $banner->delete();
+
+            Banner::query()
+                ->where('business_category_id', $categoryId)
+                ->where('sort_order', '>', $deletedOrder)
+                ->decrement('sort_order');
+        });
+    }
 }
