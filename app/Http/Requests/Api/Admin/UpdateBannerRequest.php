@@ -34,7 +34,34 @@ class UpdateBannerRequest extends FormRequest
                     ->ignore($banner?->id),
             ],
             'is_active' => ['sometimes', 'boolean'],
-            'link_url' => ['sometimes', 'nullable', 'string', 'max:2048'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'business_category_id' => 'rubro',
+            'image' => 'imagen',
+            'sort_order' => 'orden',
+            'is_active' => 'activo',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'image.image' => 'El archivo debe ser una imagen válida.',
+            'image.max' => 'La imagen no puede superar 5 MB.',
+            'image.uploaded' => 'No se pudo subir la imagen.',
+            'sort_order.min' => 'El orden debe ser al menos 1.',
+            'sort_order.unique' => 'Ya existe un banner en este rubro con ese orden.',
+            'is_active.boolean' => 'El estado activo no es válido.',
         ];
     }
 }

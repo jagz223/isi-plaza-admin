@@ -34,18 +34,22 @@ class BannerController extends Controller
 
     public function store(StoreBannerRequest $request): JsonResponse
     {
-        $extension = $request->file('image')->guessExtension() ?: 'jpg';
-        $imageUrl = $this->mediaStorage->uploadUploadedFile(
-            $request->file('image'),
-            'banners/'.Str::uuid().'.'.$extension
-        );
+        if ($request->hasFile('image')) {
+            $extension = $request->file('image')->guessExtension() ?: 'jpg';
+            $imageUrl = $this->mediaStorage->uploadUploadedFile(
+                $request->file('image'),
+                'banners/'.Str::uuid().'.'.$extension
+            );
+        } else {
+            $imageUrl = $request->string('external_image_url')->toString();
+        }
 
         $banner = Banner::query()->create([
             'business_category_id' => $request->integer('business_category_id'),
             'image_url' => $imageUrl,
             'sort_order' => $request->integer('sort_order'),
             'is_active' => $request->boolean('is_active', true),
-            'link_url' => $request->input('link_url'),
+            'link_url' => null,
         ]);
 
         $banner->load('businessCategory');

@@ -22,17 +22,17 @@ export function IsiPlazaFlashMessages() {
     return (
         <div className="mb-6 space-y-3">
             {flash?.success && (
-                <IsiPlazaAlert variant="success" title="Success">
+                <IsiPlazaAlert variant="success" title="Éxito">
                     {flash.success}
                 </IsiPlazaAlert>
             )}
             {flash?.warning && (
-                <IsiPlazaAlert variant="warning" title="Warning">
+                <IsiPlazaAlert variant="warning" title="Aviso">
                     {flash.warning}
                 </IsiPlazaAlert>
             )}
             {flash?.info && (
-                <IsiPlazaAlert variant="info" title="Information">
+                <IsiPlazaAlert variant="info" title="Información">
                     {flash.info}
                 </IsiPlazaAlert>
             )}

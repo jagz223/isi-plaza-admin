@@ -25,18 +25,22 @@ class BannersPanelController extends Controller
 
     public function store(StoreBannerRequest $request): RedirectResponse
     {
-        $extension = $request->file('image')->guessExtension() ?: 'jpg';
-        $imageUrl = $this->mediaStorage->uploadUploadedFile(
-            $request->file('image'),
-            'banners/'.Str::uuid().'.'.$extension
-        );
+        if ($request->hasFile('image')) {
+            $extension = $request->file('image')->guessExtension() ?: 'jpg';
+            $imageUrl = $this->mediaStorage->uploadUploadedFile(
+                $request->file('image'),
+                'banners/'.Str::uuid().'.'.$extension
+            );
+        } else {
+            $imageUrl = $request->string('external_image_url')->toString();
+        }
 
         Banner::query()->create([
             'business_category_id' => $request->integer('business_category_id'),
             'image_url' => $imageUrl,
             'sort_order' => $request->integer('sort_order'),
             'is_active' => $request->boolean('is_active', true),
-            'link_url' => $request->input('link_url'),
+            'link_url' => null,
         ]);
 
         return redirect()->route('isi-plaza.gestion')->with('success', 'Banner subido.');
@@ -63,12 +67,18 @@ class BannersPanelController extends Controller
         if ($request->has('is_active')) {
             $banner->is_active = $request->boolean('is_active');
         }
-        if ($request->has('link_url')) {
-            $banner->link_url = $request->input('link_url');
-        }
         $banner->save();
 
-        return redirect()->route('isi-plaza.gestion')->with('success', 'Banner actualizado.');
+        $toggleOnly = $request->exists('is_active')
+            && ! $request->hasFile('image')
+            && ! $request->has('sort_order')
+            && ! $request->has('business_category_id');
+
+        $message = $toggleOnly
+            ? ($banner->is_active ? 'Banner activado.' : 'Banner desactivado.')
+            : 'Banner actualizado.';
+
+        return redirect()->route('isi-plaza.gestion')->with('success', $message);
     }
 
     public function moveUp(Banner $banner): RedirectResponse

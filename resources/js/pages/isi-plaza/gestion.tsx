@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import IsiPlazaLayout from '@/layouts/isi-plaza/isi-plaza-layout';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { BadgeCheck } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface Stats {
     buyers_count: number;
@@ -299,6 +299,19 @@ function BannerCard({
 }) {
     const del = useForm({});
     const move = useForm({});
+    const [togglingActive, setTogglingActive] = useState(false);
+
+    const handleToggleActive = (checked: boolean) => {
+        setTogglingActive(true);
+        router.patch(
+            route('isi-plaza.banners.update', banner.id),
+            { is_active: checked },
+            {
+                preserveScroll: true,
+                onFinish: () => setTogglingActive(false),
+            },
+        );
+    };
 
     return (
         <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
@@ -314,7 +327,16 @@ function BannerCard({
                     Orden: <span className="font-mono text-neutral-900">{banner.sort_order}</span> · Clics:{' '}
                     <span className="font-mono text-neutral-900">{banner.clicks_count}</span>
                 </p>
-                <p>{banner.is_active ? <span className="font-medium text-emerald-700">Activo</span> : <span>Inactivo</span>}</p>
+                <label className="flex cursor-pointer items-center gap-2">
+                    <Checkbox
+                        checked={banner.is_active}
+                        disabled={togglingActive}
+                        onCheckedChange={(value) => handleToggleActive(value === true)}
+                    />
+                    <span className={banner.is_active ? 'font-medium text-emerald-700' : 'text-neutral-500'}>
+                        {banner.is_active ? 'Activo' : 'Inactivo'}
+                    </span>
+                </label>
             </div>
             <div className="flex flex-col gap-2 border-t border-neutral-100 p-3">
                 <div className="flex gap-2">
@@ -444,13 +466,30 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
     const bannerRows = banners && typeof banners === 'object' && 'data' in banners ? (banners.data ?? []) : [];
     const categories = businessCategories ?? [];
 
+    const bannerImageInputRef = useRef<HTMLInputElement>(null);
+
     const createBannerForm = useForm({
         business_category_id: categories[0]?.id ?? 0,
         image: null as File | null,
+        external_image_url: '',
         sort_order: 1,
         is_active: true,
-        link_url: '',
     });
+
+    const clearBannerUploadFields = () => {
+        createBannerForm.setData({
+            ...createBannerForm.data,
+            image: null,
+            external_image_url: '',
+        });
+        createBannerForm.clearErrors();
+        if (bannerImageInputRef.current) {
+            bannerImageInputRef.current.value = '';
+        }
+    };
+
+    const hasBannerSource =
+        createBannerForm.data.image !== null || createBannerForm.data.external_image_url.trim().length > 0;
 
     const suggestedOrder = useMemo(() => {
         const categoryId = createBannerForm.data.business_category_id;
@@ -590,7 +629,11 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
                         className="flex flex-col gap-4 md:flex-row md:flex-wrap md:items-end"
                         onSubmit={(e) => {
                             e.preventDefault();
-                            createBannerForm.post(route('isi-plaza.banners.store'), { forceFormData: true });
+                            createBannerForm.post(route('isi-plaza.banners.store'), {
+                                forceFormData: true,
+                                preserveScroll: true,
+                                onSuccess: () => clearBannerUploadFields(),
+                            });
                         }}
                     >
                         <div className="grid min-w-[200px] gap-1">
@@ -618,20 +661,43 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
                                 <p className="text-xs text-red-600">{createBannerForm.errors.business_category_id}</p>
                             )}
                         </div>
-                        <div className="grid gap-1">
+                        <div className="grid min-w-[220px] gap-1">
                             <Label>Imagen</Label>
-                            <Input
-                                type="file"
-                                accept="image/*"
-                                className="border-neutral-300"
-                                onChange={(e) => createBannerForm.setData('image', e.target.files?.[0] ?? null)}
-                            />
+                            <div className="flex gap-2">
+                                <Input
+                                    ref={bannerImageInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    disabled={createBannerForm.data.external_image_url.trim().length > 0}
+                                    className="border-neutral-300"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0] ?? null;
+                                        createBannerForm.setData({
+                                            ...createBannerForm.data,
+                                            image: file,
+                                            external_image_url: file ? '' : createBannerForm.data.external_image_url,
+                                        });
+                                    }}
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={!createBannerForm.data.image}
+                                    onClick={() => clearBannerUploadFields()}
+                                >
+                                    Limpiar
+                                </Button>
+                            </div>
+                            {createBannerForm.errors.image && (
+                                <p className="text-xs text-red-600">{createBannerForm.errors.image}</p>
+                            )}
                         </div>
                         <div className="grid w-28 gap-1">
                             <Label>Orden</Label>
                             <Input
                                 type="number"
-                                min={0}
+                                min={1}
                                 value={createBannerForm.data.sort_order}
                                 onChange={(e) => createBannerForm.setData('sort_order', Number(e.target.value))}
                                 className="border-neutral-300"
@@ -644,22 +710,49 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
                             <Checkbox checked={createBannerForm.data.is_active} onCheckedChange={(v) => createBannerForm.setData('is_active', v === true)} />
                             Activo
                         </label>
-                        <div className="grid min-w-[200px] flex-1 gap-1">
-                            <Label>URL (opcional)</Label>
-                            <Input
-                                value={createBannerForm.data.link_url}
-                                onChange={(e) => createBannerForm.setData('link_url', e.target.value)}
-                                placeholder="https://..."
-                                className="border-neutral-300"
-                            />
+                        <div className="grid min-w-[220px] flex-1 gap-1">
+                            <Label>URL de imagen</Label>
+                            <div className="flex gap-2">
+                                <Input
+                                    value={createBannerForm.data.external_image_url}
+                                    disabled={createBannerForm.data.image !== null}
+                                    onChange={(e) => {
+                                        const url = e.target.value;
+                                        createBannerForm.setData({
+                                            ...createBannerForm.data,
+                                            external_image_url: url,
+                                            image: url.trim() ? null : createBannerForm.data.image,
+                                        });
+                                        if (url.trim() && bannerImageInputRef.current) {
+                                            bannerImageInputRef.current.value = '';
+                                        }
+                                    }}
+                                    placeholder="https://..."
+                                    className="border-neutral-300"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={!createBannerForm.data.external_image_url.trim()}
+                                    onClick={() => clearBannerUploadFields()}
+                                >
+                                    Limpiar
+                                </Button>
+                            </div>
+                            {createBannerForm.errors.external_image_url && (
+                                <p className="text-xs text-red-600">{createBannerForm.errors.external_image_url}</p>
+                            )}
+                            <p className="text-xs text-neutral-500">Usa imagen o URL, no ambas.</p>
                         </div>
                         <Button
                             type="submit"
                             className="bg-[#E00000] text-white hover:bg-[#FF0000]"
                             disabled={
                                 createBannerForm.processing ||
-                                !createBannerForm.data.image ||
-                                !createBannerForm.data.business_category_id
+                                !hasBannerSource ||
+                                !createBannerForm.data.business_category_id ||
+                                createBannerForm.data.sort_order < 1
                             }
                         >
                             Subir al carrusel
