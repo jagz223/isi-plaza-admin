@@ -104,6 +104,31 @@ it('muestra detalle de mayorista activo', function (): void {
         ->assertJsonStructure(['data' => ['pdf_url', 'excel_url', 'catalog_images']]);
 });
 
+it('sirve pdf en línea para vista previa y como adjunto al descargar', function (): void {
+    $seller = User::factory()->mayorista()->create();
+    $pdfPath = "sellers/{$seller->id}/documents/catalog.pdf";
+    \Illuminate\Support\Facades\Storage::disk('local')->put(
+        'firebase-fake/'.$pdfPath,
+        '%PDF-1.4 test',
+    );
+    $pdfUrl = 'https://firebasestorage.googleapis.com/v0/b/test.firebasestorage.app/o/'.
+        rawurlencode($pdfPath).'?alt=media&token=test';
+
+    SellerProfile::query()->create([
+        'user_id' => $seller->id,
+        'access_status' => AccessStatus::Active,
+        'pdf_url' => $pdfUrl,
+    ]);
+
+    $preview = $this->get('/api/v1/consumer/sellers/'.$seller->id.'/pdf/file');
+    $preview->assertSuccessful();
+    expect($preview->headers->get('content-disposition'))->toContain('inline');
+
+    $download = $this->get('/api/v1/consumer/sellers/'.$seller->id.'/pdf/file?download=1');
+    $download->assertSuccessful();
+    expect($download->headers->get('content-disposition'))->toContain('attachment');
+});
+
 it('expone urls de descarga de documentos en el detalle', function (): void {
     $seller = User::factory()->mayorista()->create();
     SellerProfile::query()->create([
@@ -183,7 +208,11 @@ it('registra eventos de interacción para métricas del mayorista', function ():
         'event_type' => SellerInteractionEventType::WhatsappClick->value,
     ])->assertCreated();
 
-    expect(SellerInteractionEvent::query()->where('seller_user_id', $seller->id)->count())->toBe(2);
+    $this->postJson('/api/v1/consumer/sellers/'.$seller->id.'/interactions', [
+        'event_type' => SellerInteractionEventType::WebsiteClick->value,
+    ])->assertCreated();
+
+    expect(SellerInteractionEvent::query()->where('seller_user_id', $seller->id)->count())->toBe(3);
 });
 
 it('lista banners activos e incrementa clics', function (): void {

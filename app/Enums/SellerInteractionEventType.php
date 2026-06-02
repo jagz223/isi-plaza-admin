@@ -6,4 +6,5 @@ enum SellerInteractionEventType: string
 {
     case ProfileView = 'profile_view';
     case WhatsappClick = 'whatsapp_click';
+    case WebsiteClick = 'website_click';
 }

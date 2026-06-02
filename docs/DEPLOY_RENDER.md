@@ -110,6 +110,18 @@ Firestore sigue en Firebase (mismo proyecto).
 
 ---
 
+## Cron — métricas mensuales de mayoristas
+
+Las métricas (clics WhatsApp / web) se reinician el **día 1** de cada mes. En Render, crea un **Cron Job** (o worker con scheduler) que ejecute cada minuto:
+
+```bash
+php artisan schedule:run
+```
+
+El comando `seller:reset-monthly-metrics` corre automáticamente el día 1 a las 00:05 (zona `APP_TIMEZONE`). También puedes lanzarlo a mano en Shell: `php artisan seller:reset-monthly-metrics`.
+
+---
+
 ## Notas
 
 - El plan **Free** duerme tras inactividad (~50 s al despertar).

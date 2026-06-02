@@ -187,25 +187,33 @@ it('sube imagen de catálogo con multipart y persiste en catalog_images', functi
         ->assertHeader('content-type', 'image/jpeg');
 });
 
-it('devuelve métricas del último mes', function (): void {
+it('devuelve métricas del mes en curso', function (): void {
     $user = User::factory()->mayorista()->create();
     SellerProfile::query()->create(['user_id' => $user->id, 'access_status' => AccessStatus::Active]);
 
+    $inCurrentMonth = now()->startOfMonth()->addDay();
+
     SellerInteractionEvent::query()->create([
         'seller_user_id' => $user->id,
-        'event_type' => SellerInteractionEventType::ProfileView,
-        'created_at' => now()->subDays(3),
+        'event_type' => SellerInteractionEventType::WhatsappClick,
+        'created_at' => $inCurrentMonth,
+    ]);
+    SellerInteractionEvent::query()->create([
+        'seller_user_id' => $user->id,
+        'event_type' => SellerInteractionEventType::WebsiteClick,
+        'created_at' => $inCurrentMonth->copy()->addHour(),
     ]);
     SellerInteractionEvent::query()->create([
         'seller_user_id' => $user->id,
         'event_type' => SellerInteractionEventType::WhatsappClick,
-        'created_at' => now()->subDays(5),
+        'created_at' => now()->startOfMonth()->subDay(),
     ]);
 
     $this->getJson('/api/v1/seller/metrics', sellerAuth($user))
         ->assertSuccessful()
-        ->assertJsonPath('profile_views_count', 1)
-        ->assertJsonPath('whatsapp_clicks_count', 1);
+        ->assertJsonPath('whatsapp_clicks_count', 1)
+        ->assertJsonPath('website_clicks_count', 1)
+        ->assertJsonStructure(['period_label']);
 });
 
 it('muestra ajustes con fecha de suscripción', function (): void {

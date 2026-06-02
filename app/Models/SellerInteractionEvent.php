@@ -22,6 +22,7 @@ class SellerInteractionEvent extends Model
         'event_type',
         'actor_user_id',
         'metadata',
+        'created_at',
     ];
 
     /**

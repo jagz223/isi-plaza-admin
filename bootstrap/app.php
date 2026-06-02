@@ -1,14 +1,15 @@
 <?php
 
-use App\Http\Middleware\EnsurePlatformAccessEnabled;
 use App\Http\Middleware\EnsureConsumerApiUser;
 use App\Http\Middleware\EnsureIsiPlazaWebSession;
+use App\Http\Middleware\EnsurePlatformAccessEnabled;
 use App\Http\Middleware\EnsureSellerApiUser;
 use App\Http\Middleware\EnsureSellerHasActiveAccess;
 use App\Http\Middleware\EnsureValidAdminToken;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\OptionalSanctumAuthentication;
 use App\Http\Middleware\RedirectIfIsiPlazaAdminAuthenticated;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -45,4 +46,11 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
-    })->create();
+    })
+    ->withSchedule(function (Schedule $schedule): void {
+        $schedule->command('seller:reset-monthly-metrics')
+            ->monthlyOn(1, '00:05')
+            ->timezone(config('app.timezone'))
+            ->withoutOverlapping();
+    })
+    ->create();
