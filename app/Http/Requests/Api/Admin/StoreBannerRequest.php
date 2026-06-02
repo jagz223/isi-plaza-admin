@@ -31,6 +31,7 @@ class StoreBannerRequest extends FormRequest
                 Rule::unique('banners', 'sort_order')->where('business_category_id', $categoryId),
             ],
             'is_active' => ['sometimes', 'boolean'],
+            'link_url' => ['nullable', 'url', 'max:2048'],
         ];
     }
 
@@ -62,6 +63,7 @@ class StoreBannerRequest extends FormRequest
             'external_image_url' => 'URL de imagen',
             'sort_order' => 'orden',
             'is_active' => 'activo',
+            'link_url' => 'URL a redirigir',
         ];
     }
 
@@ -83,6 +85,8 @@ class StoreBannerRequest extends FormRequest
             'sort_order.min' => 'El orden debe ser al menos 1.',
             'sort_order.unique' => 'Ya existe un banner en este rubro con ese orden.',
             'is_active.boolean' => 'El estado activo no es válido.',
+            'link_url.url' => 'La URL a redirigir no es válida.',
+            'link_url.max' => 'La URL a redirigir es demasiado larga.',
         ];
     }
 }

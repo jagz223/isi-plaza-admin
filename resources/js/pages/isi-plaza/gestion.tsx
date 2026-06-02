@@ -474,6 +474,7 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
         external_image_url: '',
         sort_order: 1,
         is_active: true,
+        link_url: '',
     });
 
     const clearBannerUploadFields = () => {
@@ -481,6 +482,7 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
             ...createBannerForm.data,
             image: null,
             external_image_url: '',
+            link_url: '',
         });
         createBannerForm.clearErrors();
         if (bannerImageInputRef.current) {
@@ -744,6 +746,20 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
                                 <p className="text-xs text-red-600">{createBannerForm.errors.external_image_url}</p>
                             )}
                             <p className="text-xs text-neutral-500">Usa imagen o URL, no ambas.</p>
+                        </div>
+                        <div className="grid min-w-[220px] flex-1 gap-1">
+                            <Label>URL a redirigir (opcional)</Label>
+                            <Input
+                                type="url"
+                                value={createBannerForm.data.link_url}
+                                onChange={(e) => createBannerForm.setData('link_url', e.target.value)}
+                                placeholder="https://..."
+                                className="border-neutral-300"
+                            />
+                            {createBannerForm.errors.link_url && (
+                                <p className="text-xs text-red-600">{createBannerForm.errors.link_url}</p>
+                            )}
+                            <p className="text-xs text-neutral-500">Al tocar el banner en la app, abre esta página.</p>
                         </div>
                         <Button
                             type="submit"

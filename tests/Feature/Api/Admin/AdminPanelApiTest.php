@@ -96,6 +96,28 @@ it('crea un banner con imagen', function (): void {
         ->and($banner->image_url)->toStartWith('https://firebasestorage.googleapis.com/');
 });
 
+it('crea un banner con url de redireccion opcional', function (): void {
+    /** @var TestCase $this */
+    $this->seed(BusinessCategorySeeder::class);
+    $categoryId = BusinessCategory::query()->value('id');
+    $file = UploadedFile::fake()->image('banner.jpg', 800, 200);
+
+    $this->post(
+        '/api/v1/admin/banners',
+        [
+            'business_category_id' => $categoryId,
+            'image' => $file,
+            'sort_order' => 1,
+            'is_active' => true,
+            'link_url' => 'https://example.com/promo',
+        ],
+        adminAuthHeaders()
+    )->assertCreated()
+        ->assertJsonPath('data.link_url', 'https://example.com/promo');
+
+    expect(Banner::query()->value('link_url'))->toBe('https://example.com/promo');
+});
+
 it('crea un token de panel y devuelve el texto plano una vez', function (): void {
     /** @var TestCase $this */
     $response = $this->postJson(

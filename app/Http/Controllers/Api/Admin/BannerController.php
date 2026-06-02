@@ -49,7 +49,7 @@ class BannerController extends Controller
             'image_url' => $imageUrl,
             'sort_order' => $request->integer('sort_order'),
             'is_active' => $request->boolean('is_active', true),
-            'link_url' => null,
+            'link_url' => $request->filled('link_url') ? $request->string('link_url')->toString() : null,
         ]);
 
         $banner->load('businessCategory');
