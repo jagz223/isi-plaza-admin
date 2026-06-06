@@ -32,6 +32,30 @@ it('lista categorías de negocio sin autenticación', function (): void {
         ->assertJsonCount(10, 'data');
 });
 
+it('registra comprador invitado con nombre y whatsapp', function (): void {
+    $this->postJson('/api/v1/consumer/auth/guest', [
+        'name' => 'Visitante Demo',
+        'whatsapp' => '+52 5512345678',
+    ])->assertSuccessful()
+        ->assertJsonStructure(['token', 'token_type', 'user'])
+        ->assertJsonPath('user.name', 'Visitante Demo')
+        ->assertJsonPath('user.whatsapp', '+52 5512345678')
+        ->assertJsonPath('user.role', UserRole::Comprador->value);
+
+    $user = User::query()->where('whatsapp', '+52 5512345678')->first();
+    expect($user)->not->toBeNull()
+        ->and($user->role)->toBe(UserRole::Comprador)
+        ->and($user->provider)->toBe(SocialProvider::Guest->value);
+
+    $this->postJson('/api/v1/consumer/auth/guest', [
+        'name' => 'Visitante Actualizado',
+        'whatsapp' => '+52 5512345678',
+    ])->assertSuccessful()
+        ->assertJsonPath('user.name', 'Visitante Actualizado');
+
+    expect(User::query()->where('whatsapp', '+52 5512345678')->count())->toBe(1);
+});
+
 it('inicia sesión social y devuelve token de comprador', function (): void {
     $this->postJson('/api/v1/consumer/auth/social', [
         'provider' => SocialProvider::Google->value,

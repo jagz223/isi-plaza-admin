@@ -15,7 +15,7 @@ interface Stats {
 interface BuyerRow {
     id: number;
     name: string;
-    email: string;
+    whatsapp: string | null;
     created_at: string | null;
 }
 
@@ -547,8 +547,8 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
                                 <thead>
                                     <tr className="border-b border-neutral-200 bg-[#E00000] text-white">
                                         <th className="px-4 py-3 font-semibold">ID</th>
-                                        <th className="px-4 py-3 font-semibold">Usuario</th>
-                                        <th className="px-4 py-3 font-semibold">Mail</th>
+                                        <th className="px-4 py-3 font-semibold">User</th>
+                                        <th className="px-4 py-3 font-semibold">WhatsApp</th>
                                         <th className="px-4 py-3 font-semibold">Alta</th>
                                         <th className="px-4 py-3 text-right font-semibold">Acciones</th>
                                     </tr>
@@ -565,7 +565,7 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
                                             <tr key={row.id} className="border-b border-neutral-100 hover:bg-neutral-50/80">
                                                 <td className="px-4 py-3 font-mono text-xs text-neutral-600">{row.id}</td>
                                                 <td className="px-4 py-3 font-medium text-neutral-900">{row.name}</td>
-                                                <td className="px-4 py-3 text-neutral-700">{row.email}</td>
+                                                <td className="px-4 py-3 text-neutral-700">{row.whatsapp ?? '—'}</td>
                                                 <td className="px-4 py-3 text-neutral-600">{row.created_at ? new Date(row.created_at).toLocaleString() : '—'}</td>
                                                 <td className="px-4 py-3 text-right">
                                                     <DeleteBuyerButton buyerId={row.id} />

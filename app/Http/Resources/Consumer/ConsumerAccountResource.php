@@ -19,7 +19,7 @@ class ConsumerAccountResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'email' => $this->email,
+            'whatsapp' => $this->whatsapp,
             'role' => $this->role instanceof \BackedEnum ? $this->role->value : $this->role,
             'provider' => $this->provider,
         ];

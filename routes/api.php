@@ -89,6 +89,7 @@ Route::prefix('v1/seller')->group(function (): void {
 | Navegación invitado sin token; favoritos y sesión requieren Sanctum (comprador).
 */
 Route::prefix('v1/consumer')->group(function (): void {
+    Route::post('auth/guest', [ConsumerAuthController::class, 'guestRegister'])->name('api.consumer.auth.guest');
     Route::post('auth/social', [ConsumerAuthController::class, 'socialLogin'])->name('api.consumer.auth.social');
 
     Route::get('business-categories', [ConsumerBusinessCategoryController::class, 'index'])->name('api.consumer.business-categories.index');

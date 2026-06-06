@@ -19,7 +19,7 @@ class BuyerResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'email' => $this->email,
+            'whatsapp' => $this->whatsapp,
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }
