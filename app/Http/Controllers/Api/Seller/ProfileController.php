@@ -56,7 +56,12 @@ class ProfileController extends Controller
             'files_meta' => self::describeUploadedFiles($request),
         ]);
 
-        $data = $request->safe()->except(['avatar', 'pdf', 'excel']);
+        $safe = $request->safe();
+        $data = $safe->except(['avatar', 'pdf', 'excel', 'name']);
+
+        if ($safe->has('name')) {
+            $user->update(['name' => $safe->input('name')]);
+        }
 
         if ($request->hasFile('avatar')) {
             $this->mediaStorage->deleteByStoredValue($profile->avatar_url);

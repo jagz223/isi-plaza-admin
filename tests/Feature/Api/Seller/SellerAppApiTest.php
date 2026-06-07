@@ -99,6 +99,28 @@ it('permite dar de alta el perfil con acceso activo', function (): void {
     expect($profile->fresh()->description)->toBe('Perfil de prueba');
 });
 
+it('actualiza el nombre comercial del mayorista', function (): void {
+    $user = User::factory()->mayorista()->create(['name' => 'Nombre original']);
+    SellerProfile::query()->create([
+        'user_id' => $user->id,
+        'access_status' => AccessStatus::Active,
+    ]);
+
+    $categoryId = BusinessCategory::query()->value('id');
+
+    $this->patchJson('/api/v1/seller/profile', [
+        'name' => 'Mayorista Renombrado',
+        'business_category_id' => $categoryId,
+        'description' => 'Perfil',
+        'country' => 'México',
+        'state' => ['Jalisco'],
+    ], sellerAuth($user))
+        ->assertSuccessful()
+        ->assertJsonPath('data.name', 'Mayorista Renombrado');
+
+    expect($user->fresh()->name)->toBe('Mayorista Renombrado');
+});
+
 it('persiste perfil con PATCH json y GET profile devuelve los mismos valores', function (): void {
     $user = User::factory()->mayorista()->create();
     SellerProfile::query()->create([

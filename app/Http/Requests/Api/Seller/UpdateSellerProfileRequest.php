@@ -17,6 +17,7 @@ class UpdateSellerProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
             'business_category_id' => ['sometimes', 'nullable', 'exists:business_categories,id'],
             'avatar' => ['sometimes', 'nullable', 'image', 'max:5120'],
             'description' => ['sometimes', 'nullable', 'string', 'max:100'],
