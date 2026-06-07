@@ -62,7 +62,12 @@ it('muestra pantalla de suscripción con acceso pendiente', function (): void {
         ->assertSuccessful()
         ->assertJsonPath('can_access_app', false)
         ->assertJsonPath('access_status', 'pending')
-        ->assertJsonStructure(['subscription_price_label', 'whatsapp_payment_url']);
+        ->assertJsonStructure([
+            'subscription_plan_label',
+            'subscription_price_label',
+            'subscribe_button_label',
+            'whatsapp_payment_url',
+        ]);
 });
 
 it('bloquea perfil hasta que el admin active el acceso', function (): void {
@@ -230,7 +235,25 @@ it('muestra ajustes con fecha de suscripción', function (): void {
             'subscription_expires_at',
             'subscription_expires_at_formatted',
             'promotion_whatsapp_url',
+            'promotion_button_label',
         ]);
+});
+
+it('devuelve textos editables desde app settings en suscripción', function (): void {
+    \App\Support\SellerAppSettings::updateMany([
+        \App\Support\SellerAppSettings::SUBSCRIPTION_PLAN_LABEL => 'Plan demo',
+        \App\Support\SellerAppSettings::SUBSCRIBE_BUTTON_LABEL => 'Pagar por WhatsApp',
+        \App\Support\SellerAppSettings::SUBSCRIPTION_MESSAGE_PENDING => 'Mensaje pendiente demo',
+    ]);
+
+    $user = User::factory()->mayorista()->create();
+    SellerProfile::query()->create(['user_id' => $user->id, 'access_status' => AccessStatus::Pending]);
+
+    $this->getJson('/api/v1/seller/subscription', sellerAuth($user))
+        ->assertSuccessful()
+        ->assertJsonPath('subscription_plan_label', 'Plan demo')
+        ->assertJsonPath('subscribe_button_label', 'Pagar por WhatsApp')
+        ->assertJsonPath('message', 'Mensaje pendiente demo');
 });
 
 it('bloquea subir imagen de catálogo si hay PDF', function (): void {

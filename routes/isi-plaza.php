@@ -4,6 +4,7 @@ use App\Http\Controllers\IsiPlaza\AccessController;
 use App\Http\Controllers\IsiPlaza\BannersPanelController;
 use App\Http\Controllers\IsiPlaza\BuyersPanelController;
 use App\Http\Controllers\IsiPlaza\DataManagementPanelController;
+use App\Http\Controllers\IsiPlaza\TextosNumerosPanelController;
 use App\Http\Controllers\IsiPlaza\TokensPanelController;
 use App\Http\Controllers\IsiPlaza\VendedoresPanelController;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,9 @@ Route::prefix('isi-plaza')->name('isi-plaza.')->group(function (): void {
         Route::post('banners/{banner}/move-down', [BannersPanelController::class, 'moveDown'])->name('banners.move-down');
         Route::patch('banners/{banner}', [BannersPanelController::class, 'update'])->name('banners.update');
         Route::delete('banners/{banner}', [BannersPanelController::class, 'destroy'])->name('banners.destroy');
+
+        Route::get('textos-numeros', [TextosNumerosPanelController::class, 'index'])->name('textos-numeros.index');
+        Route::patch('textos-numeros', [TextosNumerosPanelController::class, 'update'])->name('textos-numeros.update');
 
         Route::prefix('ajustes-acceso')->name('ajustes-acceso.')->group(function (): void {
             Route::get('/', [TokensPanelController::class, 'index'])->name('index');
