@@ -8,6 +8,7 @@ use App\Models\CatalogImage;
 use App\Models\SellerInteractionEvent;
 use App\Models\SellerProfile;
 use App\Models\User;
+use App\Support\SellerAppSettings;
 use Database\Seeders\BusinessCategorySeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -262,10 +263,10 @@ it('muestra ajustes con fecha de suscripción', function (): void {
 });
 
 it('devuelve textos editables desde app settings en suscripción', function (): void {
-    \App\Support\SellerAppSettings::updateMany([
-        \App\Support\SellerAppSettings::SUBSCRIPTION_PLAN_LABEL => 'Plan demo',
-        \App\Support\SellerAppSettings::SUBSCRIBE_BUTTON_LABEL => 'Pagar por WhatsApp',
-        \App\Support\SellerAppSettings::SUBSCRIPTION_MESSAGE_PENDING => 'Mensaje pendiente demo',
+    SellerAppSettings::updateMany([
+        SellerAppSettings::SUBSCRIPTION_PLAN_LABEL => 'Plan demo',
+        SellerAppSettings::SUBSCRIBE_BUTTON_LABEL => 'Pagar por WhatsApp',
+        SellerAppSettings::SUBSCRIPTION_MESSAGE_PENDING => 'Mensaje pendiente demo',
     ]);
 
     $user = User::factory()->mayorista()->create();
@@ -276,6 +277,31 @@ it('devuelve textos editables desde app settings en suscripción', function (): 
         ->assertJsonPath('subscription_plan_label', 'Plan demo')
         ->assertJsonPath('subscribe_button_label', 'Pagar por WhatsApp')
         ->assertJsonPath('message', 'Mensaje pendiente demo');
+});
+
+it('sube PDF de catálogo con multipart en el perfil', function (): void {
+    $user = User::factory()->mayorista()->create();
+    SellerProfile::query()->create([
+        'user_id' => $user->id,
+        'access_status' => AccessStatus::Active,
+    ]);
+
+    $categoryId = BusinessCategory::query()->value('id');
+    $pdf = UploadedFile::fake()->create('catalogo.pdf', 120, 'application/pdf');
+
+    $this->post('/api/v1/seller/profile', [
+        '_method' => 'PATCH',
+        'business_category_id' => $categoryId,
+        'description' => 'Con catálogo PDF',
+        'pdf' => $pdf,
+    ], sellerAuth($user))
+        ->assertSuccessful()
+        ->assertJsonPath('data.seller_profile.description', 'Con catálogo PDF')
+        ->assertJsonPath('data.seller_profile.pdf_url', fn (?string $url): bool => is_string($url) && str_contains($url, 'catalog.pdf'));
+
+    expect(SellerProfile::query()->where('user_id', $user->id)->value('pdf_url'))
+        ->toBeString()
+        ->toContain('catalog.pdf');
 });
 
 it('bloquea subir imagen de catálogo si hay PDF', function (): void {

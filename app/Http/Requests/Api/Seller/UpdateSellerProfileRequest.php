@@ -28,11 +28,26 @@ class UpdateSellerProfileRequest extends FormRequest
             'instagram' => ['sometimes', 'nullable', 'string', 'max:25'],
             'facebook' => ['sometimes', 'nullable', 'string', 'max:25'],
             'website' => ['sometimes', 'nullable', 'url', 'max:2048'],
-            'pdf' => ['sometimes', 'nullable', 'file', 'mimes:pdf', 'max:10240'],
-            'excel' => ['sometimes', 'nullable', 'file', 'mimes:xlsx,xls', 'max:10240'],
+            'pdf' => ['sometimes', 'nullable', 'file', 'mimes:pdf', 'max:307200'],
+            'excel' => ['sometimes', 'nullable', 'file', 'mimes:xlsx,xls', 'max:307200'],
             'carousel_metadata' => ['sometimes', 'nullable', 'array'],
             'carousel_metadata.*.title' => ['sometimes', 'nullable', 'string', 'max:30'],
             'carousel_metadata.*.description' => ['sometimes', 'nullable', 'string', 'max:65'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'pdf.uploaded' => 'No se pudo subir el PDF. Comprueba que pese menos de 300 MB y vuelve a intentarlo.',
+            'pdf.mimes' => 'El catálogo debe ser un archivo PDF (.pdf).',
+            'pdf.max' => 'El PDF no puede superar 300 MB.',
+            'excel.uploaded' => 'No se pudo subir el Excel. Comprueba que pese menos de 300 MB y vuelve a intentarlo.',
+            'excel.mimes' => 'La lista debe ser un archivo Excel (.xlsx o .xls).',
+            'excel.max' => 'El Excel no puede superar 300 MB.',
         ];
     }
 }

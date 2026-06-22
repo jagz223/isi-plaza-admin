@@ -34,6 +34,8 @@ RUN apk add --no-cache \
     mbstring \
     opcache
 
+COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+
 WORKDIR /app
 
 COPY --from=vendor /app /app
