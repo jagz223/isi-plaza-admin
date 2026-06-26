@@ -7,7 +7,7 @@
             document.documentElement.classList.remove('dark');
         </script>
 
-        <title inertia>ISI PLAZA Admin</title>
+        <title inertia>Odontica Panel</title>
 
         @routes('isi-plaza')
         @viteReactRefresh

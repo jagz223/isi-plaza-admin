@@ -23,8 +23,8 @@ export default function IsiPlazaTextosNumeros({ settings }: TextosNumerosProps) 
     const form = useForm<TextosNumerosSettings>(settings);
 
     return (
-        <IsiPlazaLayout title="Textos y números">
-            <Head title="ISI PLAZA — Textos y números" />
+        <IsiPlazaLayout title="Textos app médico">
+            <Head title="Odontica — Textos app médico" />
 
             <form
                 className="mx-auto flex max-w-3xl flex-col gap-8"
@@ -34,13 +34,13 @@ export default function IsiPlazaTextosNumeros({ settings }: TextosNumerosProps) 
                 }}
             >
                 <section className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-                    <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[#E00000]">
+                    <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[#121660]">
                         Pantalla de suscripción
                     </h2>
                     <div className="grid gap-4">
                         <Field
                             label="Etiqueta del plan"
-                            hint='Ej. "Plan mayorista"'
+                            hint='Ej. "Plan dentista"'
                             value={form.data.subscription_plan_label}
                             onChange={(value) => form.setData('subscription_plan_label', value)}
                         />
@@ -75,7 +75,7 @@ export default function IsiPlazaTextosNumeros({ settings }: TextosNumerosProps) 
                 </section>
 
                 <section className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-                    <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[#E00000]">
+                    <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[#121660]">
                         Pantalla de ajustes (promoción)
                     </h2>
                     <div className="grid gap-4">
@@ -96,7 +96,7 @@ export default function IsiPlazaTextosNumeros({ settings }: TextosNumerosProps) 
                 <div className="flex justify-end">
                     <Button
                         type="submit"
-                        className="bg-[#E00000] text-white hover:bg-[#FF0000]"
+                        className="bg-[#121660] text-white hover:bg-[#0e1250]"
                         disabled={form.processing}
                     >
                         Guardar cambios

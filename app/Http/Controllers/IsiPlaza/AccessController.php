@@ -13,9 +13,7 @@ class AccessController extends Controller
 {
     public function create(): Response
     {
-        return Inertia::render('isi-plaza/access', [
-            'logoUrl' => asset('images/isi-plaza/logo.jpg'),
-        ]);
+        return Inertia::render('isi-plaza/access');
     }
 
     public function store(Request $request): RedirectResponse
@@ -27,7 +25,7 @@ class AccessController extends Controller
         $token = AdminPanelTokenValidator::firstMatchingActivePlain($request->input('token'), true);
 
         if ($token === null) {
-            return back()->withErrors(['token' => 'The token is invalid or inactive.'])->withInput($request->only('token'));
+            return back()->withErrors(['token' => 'El token no es válido o está inactivo.'])->withInput($request->only('token'));
         }
 
         $request->session()->put('isi_plaza_admin_token_id', $token->id);

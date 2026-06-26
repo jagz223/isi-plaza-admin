@@ -34,8 +34,8 @@ export default function IsiPlazaTokens({ tokens, flashPlainToken }: TokensProps)
     const createForm = useForm({ description: '' });
 
     return (
-        <IsiPlazaLayout title="Ajustes de acceso">
-            <Head title="ISI PLAZA — Ajustes de acceso" />
+        <IsiPlazaLayout title="Tokens">
+            <Head title="Odontica — Tokens de acceso" />
 
             <TokenCreatedDialog
                 open={tokenModalOpen}
@@ -48,7 +48,7 @@ export default function IsiPlazaTokens({ tokens, flashPlainToken }: TokensProps)
             />
 
             <div className="mb-8 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-                <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[#E00000]">Añadir token (9–15 caracteres)</h2>
+                <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[#121660]">Añadir token (9–15 caracteres)</h2>
                 <form
                     className="flex flex-col gap-4 sm:flex-row sm:items-end"
                     onSubmit={(e) => {
@@ -65,7 +65,7 @@ export default function IsiPlazaTokens({ tokens, flashPlainToken }: TokensProps)
                             className="border-neutral-300"
                         />
                     </div>
-                    <Button type="submit" className="bg-[#E00000] text-white hover:bg-[#FF0000]" disabled={createForm.processing}>
+                    <Button type="submit" className="bg-[#121660] text-white hover:bg-[#0e1250]" disabled={createForm.processing}>
                         Generar token
                     </Button>
                 </form>
@@ -73,7 +73,7 @@ export default function IsiPlazaTokens({ tokens, flashPlainToken }: TokensProps)
             <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
                 <table className="w-full text-left text-sm">
                     <thead>
-                        <tr className="border-b border-neutral-200 bg-[#E00000] text-white">
+                        <tr className="border-b border-neutral-200 bg-[#121660] text-white">
                             <th className="px-4 py-3 font-semibold">ID</th>
                             <th className="px-4 py-3 font-semibold">Descripción</th>
                             <th className="px-4 py-3 font-semibold">Activo</th>

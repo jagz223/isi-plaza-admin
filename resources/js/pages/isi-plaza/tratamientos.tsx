@@ -32,11 +32,11 @@ export default function IsiPlazaTratamientos({ sections }: TratamientosProps) {
 
     return (
         <IsiPlazaLayout title="Tratamientos">
-            <Head title="ISI PLAZA — Tratamientos" />
+            <Head title="Odontica — Tratamientos" />
 
             <div className="mx-auto flex max-w-4xl flex-col gap-8">
                 <section className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-                    <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[#E00000]">
+                    <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[#121660]">
                         Nueva sección
                     </h2>
                     <form

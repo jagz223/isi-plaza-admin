@@ -85,33 +85,33 @@
     --card-foreground: #0a0a0a;
     --popover: #ffffff;
     --popover-foreground: #0a0a0a;
-    --primary: #e00000;
+    --primary: #121660;
     --primary-foreground: #ffffff;
     --secondary: #fafafa;
     --secondary-foreground: #171717;
     --muted: #f5f5f5;
     --muted-foreground: #525252;
-    --accent: #fef2f2;
-    --accent-foreground: #171717;
-    --destructive: #e00000;
+    --accent: #eef0fb;
+    --accent-foreground: #121660;
+    --destructive: #b91c1c;
     --destructive-foreground: #ffffff;
     --border: #e5e5e5;
     --input: #e5e5e5;
-    --ring: #ff4040;
+    --ring: #1a2280;
     --sidebar-background: #ffffff;
     --sidebar-foreground: #0a0a0a;
-    --sidebar-primary: #e00000;
+    --sidebar-primary: #121660;
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #fff5f5;
-    --sidebar-accent-foreground: #0a0a0a;
+    --sidebar-accent: #eef0fb;
+    --sidebar-accent-foreground: #121660;
     --sidebar-border: #e5e5e5;
-    --sidebar-ring: #ff4040;
+    --sidebar-ring: #1a2280;
 }
 
 .isi-plaza-theme input,
 .isi-plaza-theme textarea {
     color: #171717;
-    caret-color: #e00000;
+    caret-color: #121660;
     -webkit-text-fill-color: #171717;
 }
 
@@ -120,7 +120,7 @@
 .isi-plaza-theme input:-webkit-autofill:focus {
     -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
     -webkit-text-fill-color: #171717;
-    caret-color: #e00000;
+    caret-color: #121660;
 }
 
 :root {

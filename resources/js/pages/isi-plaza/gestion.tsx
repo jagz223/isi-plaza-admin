@@ -143,7 +143,7 @@ function DeleteBuyerButton({ buyerId }: { buyerId: number }) {
             className="border-red-200 text-red-700 hover:bg-red-50"
             disabled={form.processing}
             onClick={() => {
-                if (confirm('¿Eliminar esta cuenta de comprador del sistema?')) {
+                if (confirm('¿Eliminar esta cuenta de paciente del sistema?')) {
                     form.delete(route('isi-plaza.buyers.destroy', buyerId));
                 }
             }}
@@ -289,7 +289,7 @@ function SellerTableRow({ row }: { row: SellerRow }) {
                     size="sm"
                     className="border-red-200 text-xs text-red-700 hover:bg-red-50"
                     onClick={() => {
-                        if (confirm('¿Eliminar cuenta de mayorista del sistema? Ya no podrá acceder.')) {
+                        if (confirm('¿Eliminar cuenta de médico del sistema? Ya no podrá acceder.')) {
                             router.delete(route('isi-plaza.vendedores.destroy', row.id), { preserveScroll: true });
                         }
                     }}
@@ -435,8 +435,8 @@ function PaginationLinks({ paginator }: { paginator: Paginated<unknown> }) {
                             preserveScroll
                             className={
                                 link.active
-                                    ? 'inline-flex min-w-9 items-center justify-center rounded-md bg-[#E00000] px-3 py-1 text-sm font-medium text-white'
-                                    : 'inline-flex min-w-9 items-center justify-center rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm text-neutral-700 hover:border-[#E00000] hover:text-[#E00000]'
+                                    ? 'inline-flex min-w-9 items-center justify-center rounded-md bg-[#121660] px-3 py-1 text-sm font-medium text-white'
+                                    : 'inline-flex min-w-9 items-center justify-center rounded-md border border-neutral-200 bg-white px-3 py-1 text-sm text-neutral-700 hover:border-[#121660] hover:text-[#121660]'
                             }
                             dangerouslySetInnerHTML={{ __html: link.label }}
                         />
@@ -455,7 +455,7 @@ function PaginationLinks({ paginator }: { paginator: Paginated<unknown> }) {
                     <Link
                         href={cursorLinks.prev}
                         preserveScroll
-                        className="inline-flex rounded-md border border-neutral-200 bg-white px-3 py-1.5 font-medium hover:border-[#E00000] hover:text-[#E00000]"
+                        className="inline-flex rounded-md border border-neutral-200 bg-white px-3 py-1.5 font-medium hover:border-[#121660] hover:text-[#121660]"
                     >
                         Anterior
                     </Link>
@@ -469,7 +469,7 @@ function PaginationLinks({ paginator }: { paginator: Paginated<unknown> }) {
                     <Link
                         href={cursorLinks.next}
                         preserveScroll
-                        className="inline-flex rounded-md border border-neutral-200 bg-white px-3 py-1.5 font-medium hover:border-[#E00000] hover:text-[#E00000]"
+                        className="inline-flex rounded-md border border-neutral-200 bg-white px-3 py-1.5 font-medium hover:border-[#121660] hover:text-[#121660]"
                     >
                         Siguiente
                     </Link>
@@ -561,16 +561,16 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
 
     return (
         <IsiPlazaLayout title="Gestión de datos">
-            <Head title="ISI PLAZA — Gestión de datos" />
+            <Head title="Odontica — Gestión de datos" />
 
             <section className="mb-10">
                 <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
                     <div className="flex min-w-0 flex-col gap-3">
-                        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#E00000]">Compradores (app 1)</h2>
+                        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#121660]">Pacientes (app paciente)</h2>
                         <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
                             <table className="w-full min-w-[28rem] text-left text-sm">
                                 <thead>
-                                    <tr className="border-b border-neutral-200 bg-[#E00000] text-white">
+                                    <tr className="border-b border-neutral-200 bg-[#121660] text-white">
                                         <th className="px-4 py-3 font-semibold">ID</th>
                                         <th className="px-4 py-3 font-semibold">User</th>
                                         <th className="px-4 py-3 font-semibold">WhatsApp</th>
@@ -582,7 +582,7 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
                                     {buyerRows.length === 0 ? (
                                         <tr>
                                             <td colSpan={5} className="px-4 py-8 text-center text-neutral-500">
-                                                No hay compradores.
+                                                No hay pacientes registrados.
                                             </td>
                                         </tr>
                                     ) : (
@@ -604,17 +604,17 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
                         <p className="text-sm text-neutral-500">Total en listado: {buyers?.meta?.total ?? 0}</p>
                         {buyers && <PaginationLinks paginator={buyers} />}
                         <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-                            <p className="text-sm font-medium text-neutral-600">Número de compradores (registrados)</p>
-                            <p className="mt-1 text-3xl font-bold tabular-nums text-[#E00000]">{stats?.buyers_count ?? 0}</p>
+                            <p className="text-sm font-medium text-neutral-600">Pacientes registrados</p>
+                            <p className="mt-1 text-3xl font-bold tabular-nums text-[#121660]">{stats?.buyers_count ?? 0}</p>
                         </div>
                     </div>
 
                     <div className="flex min-w-0 flex-col gap-3">
-                        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#E00000]">Mayoristas (app 2)</h2>
+                        <h2 className="text-sm font-semibold uppercase tracking-wide text-[#121660]">Médicos (app médico)</h2>
                         <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
                             <table className="w-full min-w-[52rem] text-left text-sm">
                                 <thead>
-                                    <tr className="border-b border-neutral-200 bg-[#E00000] text-white">
+                                    <tr className="border-b border-neutral-200 bg-[#121660] text-white">
                                         <th className="px-3 py-3 font-semibold">Usuario</th>
                                         <th className="px-3 py-3 font-semibold">Mail</th>
                                         <th className="px-3 py-3 font-semibold">Contraseña</th>
@@ -629,7 +629,7 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
                                     {sellerRows.length === 0 ? (
                                         <tr>
                                             <td colSpan={8} className="px-4 py-8 text-center text-neutral-500">
-                                                No hay mayoristas registrados.
+                                                No hay médicos registrados.
                                             </td>
                                         </tr>
                                     ) : (
@@ -641,15 +641,15 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
                         <p className="text-sm text-neutral-500">Total en listado: {sellers?.meta?.total ?? 0}</p>
                         {sellers && <PaginationLinks paginator={sellers} />}
                         <div className="rounded-xl border border-neutral-200 bg-white p-5 shadow-sm">
-                            <p className="text-sm font-medium text-neutral-600">Número de mayoristas (registrados)</p>
-                            <p className="mt-1 text-3xl font-bold tabular-nums text-[#E00000]">{stats?.sellers_count ?? 0}</p>
+                            <p className="text-sm font-medium text-neutral-600">Médicos registrados</p>
+                            <p className="mt-1 text-3xl font-bold tabular-nums text-[#121660]">{stats?.sellers_count ?? 0}</p>
                         </div>
                     </div>
                 </div>
             </section>
 
             <section>
-                <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[#E00000]">Banners — carrusel app 1</h2>
+                <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-[#121660]">Banners — app paciente</h2>
                 <div className="mb-8 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
                     <h3 className="mb-4 text-sm font-semibold text-neutral-800">Subir banner</h3>
                     <form
@@ -814,7 +814,7 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
                         </div>
                         <Button
                             type="submit"
-                            className="bg-[#E00000] text-white hover:bg-[#FF0000]"
+                            className="bg-[#121660] text-white hover:bg-[#0e1250]"
                             disabled={
                                 createBannerForm.processing ||
                                 !hasBannerSource ||
