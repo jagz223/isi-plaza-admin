@@ -10,44 +10,22 @@ use App\Http\Resources\Consumer\ConsumerSellerDetailResource;
 use App\Http\Resources\Consumer\ConsumerSellerListResource;
 use App\Models\Favorite;
 use App\Models\User;
+use App\Services\Consumer\SellerSearchService;
 use App\Support\ConsumerSellerQuery;
 use Illuminate\Http\JsonResponse;
 
 class SellerController extends Controller
 {
+    public function __construct(
+        protected SellerSearchService $sellerSearch,
+    ) {}
+
     public function index(ListSellersRequest $request): JsonResponse
     {
         $favoriteIds = ConsumerSellerQuery::favoriteMayoristaIds($request);
+        $sellers = $this->sellerSearch->paginate($request);
 
-        $query = ConsumerSellerQuery::visibleSellers()
-            ->with(['sellerProfile.businessCategory'])
-            ->orderBy('name');
-
-        if ($request->filled('business_category_id')) {
-            $query->whereHas('sellerProfile', fn ($q) => $q
-                ->where('business_category_id', $request->integer('business_category_id')));
-        }
-
-        if ($request->filled('country')) {
-            $query->whereHas('sellerProfile', fn ($q) => $q
-                ->where('country', $request->string('country')));
-        }
-
-        if ($request->filled('state')) {
-            $query->whereHas('sellerProfile', function ($q) use ($request) {
-                // Compatible with both string and JSON array
-                $q->where(function($sq) use ($request) {
-                    $sq->where('state', 'like', '%"'.$request->string('state').'"%')
-                      ->orWhere('state', $request->string('state'));
-                });
-            });
-        }
-
-        $perPage = $request->integer('per_page', config('isi-plaza.consumer.sellers_per_page', 20));
-
-        $sellers = $query->paginate($perPage);
-
-        return response()->json([
+        $payload = [
             'data' => $sellers->getCollection()->map(
                 fn (User $user) => (new ConsumerSellerListResource($user, $favoriteIds))->resolve($request)
             )->values(),
@@ -65,14 +43,28 @@ class SellerController extends Controller
                 'prev' => $sellers->previousPageUrl(),
                 'next' => $sellers->nextPageUrl(),
             ],
-        ]);
+        ];
+
+        if ($request->filled('latitude') && $request->filled('longitude')) {
+            $payload['meta']['geo'] = [
+                'latitude' => $request->float('latitude'),
+                'longitude' => $request->float('longitude'),
+                'radius_km' => $request->float(
+                    'radius_km',
+                    (float) config('odontica-geo.default_radius_km', 20),
+                ),
+                'sorted_by' => 'distance',
+            ];
+        }
+
+        return response()->json($payload);
     }
 
     public function show(User $seller, ListSellersRequest $request): ConsumerSellerDetailResource|JsonResponse
     {
         abort_unless($seller->role === UserRole::Mayorista, 404);
 
-        $seller->load(['sellerProfile.businessCategory', 'sellerProfile.catalogImages']);
+        $seller->load(['sellerProfile.businessCategory', 'sellerProfile.catalogImages', 'sellerProfile.doctorServices.treatment.section']);
 
         if ($seller->sellerProfile === null || $seller->sellerProfile->access_status !== AccessStatus::Active) {
             return response()->json([

@@ -6,12 +6,30 @@ use App\Enums\AccessStatus;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Admin\UpdateSellerProfileRequest;
+use App\Http\Resources\Admin\SellerDetailResource;
 use App\Models\SellerProfile;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class VendedoresPanelController extends Controller
 {
+    public function show(User $user): Response
+    {
+        abort_unless($user->role === UserRole::Mayorista, 404);
+
+        $user->load([
+            'sellerProfile.businessCategory',
+            'sellerProfile.catalogImages',
+            'sellerProfile.doctorServices.treatment.section',
+        ]);
+
+        return Inertia::render('isi-plaza/medico-detalle', [
+            'seller' => SellerDetailResource::make($user)->resolve(),
+        ]);
+    }
+
     public function index(): RedirectResponse
     {
         return redirect()->route('isi-plaza.gestion');
@@ -45,7 +63,7 @@ class VendedoresPanelController extends Controller
             $data
         );
 
-        return redirect()->route('isi-plaza.gestion')->with('success', 'Perfil de mayorista actualizado.');
+        return redirect()->route('isi-plaza.gestion')->with('success', 'Perfil de médico actualizado.');
     }
 
     public function destroy(User $user): RedirectResponse
@@ -53,6 +71,6 @@ class VendedoresPanelController extends Controller
         abort_unless($user->role === UserRole::Mayorista, 404);
         $user->delete();
 
-        return redirect()->route('isi-plaza.gestion')->with('success', 'Cuenta de mayorista eliminada.');
+        return redirect()->route('isi-plaza.gestion')->with('success', 'Cuenta de médico eliminada.');
     }
 }

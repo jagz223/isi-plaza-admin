@@ -9,6 +9,7 @@ class Banner extends Model
 {
     protected $fillable = [
         'business_category_id',
+        'treatment_id',
         'image_url',
         'sort_order',
         'is_active',
@@ -34,5 +35,13 @@ class Banner extends Model
     public function businessCategory(): BelongsTo
     {
         return $this->belongsTo(BusinessCategory::class);
+    }
+
+    /**
+     * @return BelongsTo<Treatment, $this>
+     */
+    public function treatment(): BelongsTo
+    {
+        return $this->belongsTo(Treatment::class);
     }
 }

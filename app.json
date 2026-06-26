@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "d2712885-83eb-4780-8911-25d4053eb2bd"
+      }
+    },
+    "android": {
+      "package": "isi.plaza.app"
+    }
+  }
+}

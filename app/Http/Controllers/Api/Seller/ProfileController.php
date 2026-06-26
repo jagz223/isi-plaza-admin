@@ -21,7 +21,7 @@ class ProfileController extends Controller
 
     public function show(Request $request): SellerAccountResource
     {
-        $user = $request->user()->load(['sellerProfile.businessCategory', 'sellerProfile.catalogImages']);
+        $user = $request->user()->load(['sellerProfile.businessCategory', 'sellerProfile.catalogImages', 'sellerProfile.doctorServices.treatment.section']);
 
         Log::info('seller.profile.show', [
             'user_id' => $user->id,
@@ -110,7 +110,7 @@ class ProfileController extends Controller
         ]);
 
         return SellerAccountResource::make(
-            $user->fresh()->load(['sellerProfile.businessCategory', 'sellerProfile.catalogImages'])
+            $user->fresh()->load(['sellerProfile.businessCategory', 'sellerProfile.catalogImages', 'sellerProfile.doctorServices.treatment.section'])
         );
     }
 
@@ -126,7 +126,7 @@ class ProfileController extends Controller
         $this->catalogMode->clearPdf($profile);
 
         return SellerAccountResource::make(
-            $user->fresh()->load(['sellerProfile.businessCategory', 'sellerProfile.catalogImages'])
+            $user->fresh()->load(['sellerProfile.businessCategory', 'sellerProfile.catalogImages', 'sellerProfile.doctorServices.treatment.section'])
         );
     }
 
@@ -142,7 +142,7 @@ class ProfileController extends Controller
         $this->catalogMode->clearExcel($profile);
 
         return SellerAccountResource::make(
-            $user->fresh()->load(['sellerProfile.businessCategory', 'sellerProfile.catalogImages'])
+            $user->fresh()->load(['sellerProfile.businessCategory', 'sellerProfile.catalogImages', 'sellerProfile.doctorServices.treatment.section'])
         );
     }
 

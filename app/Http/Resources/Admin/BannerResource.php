@@ -28,6 +28,11 @@ class BannerResource extends JsonResource
             'sort_order' => $this->sort_order,
             'is_active' => $this->is_active,
             'link_url' => $this->link_url,
+            'treatment_id' => $this->treatment_id,
+            'treatment' => $this->whenLoaded('treatment', fn () => [
+                'id' => $this->treatment?->id,
+                'name' => $this->treatment?->name,
+            ]),
             'clicks_count' => $this->clicks_count,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),

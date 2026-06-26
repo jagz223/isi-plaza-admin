@@ -71,4 +71,38 @@ class FilterController extends Controller
             'data' => $states,
         ]);
     }
+
+    public function regions(): JsonResponse
+    {
+        $regions = collect(config('odontica-geo.regions', []))
+            ->map(fn (array $region, string $key) => [
+                'key' => $key,
+                'label' => $region['label'] ?? $key,
+            ])
+            ->values();
+
+        return response()->json([
+            'data' => $regions,
+        ]);
+    }
+
+    public function municipalities(Request $request): JsonResponse
+    {
+        $request->validate([
+            'region' => ['required', 'string', 'in:cdmx,edo_mex'],
+        ]);
+
+        $regionKey = $request->string('region');
+        /** @var array{municipalities?: array<int, string>}|null $region */
+        $region = config("odontica-geo.regions.{$regionKey}");
+
+        $municipalities = collect($region['municipalities'] ?? [])
+            ->sort()
+            ->values();
+
+        return response()->json([
+            'region' => $regionKey,
+            'data' => $municipalities,
+        ]);
+    }
 }

@@ -22,6 +22,8 @@ class ConsumerBannerResource extends JsonResource
             'image_url' => MediaUrl::resolve($this->image_url),
             'sort_order' => $this->sort_order,
             'link_url' => $this->link_url,
+            'treatment_id' => $this->treatment_id,
+            'treatment_name' => $this->relationLoaded('treatment') ? $this->treatment?->name : null,
         ];
     }
 }

@@ -76,6 +76,13 @@ interface BannerRow {
     is_active: boolean;
     clicks_count: number;
     link_url: string | null;
+    treatment_id: number | null;
+    treatment?: { id: number; name: string } | null;
+}
+
+interface TreatmentOption {
+    id: number;
+    name: string;
 }
 
 interface GestionProps {
@@ -84,6 +91,7 @@ interface GestionProps {
     sellers: Paginated<SellerRow>;
     banners: { data: BannerRow[] };
     businessCategories: BusinessCategoryOption[];
+    treatments: TreatmentOption[];
 }
 
 function SubscriptionCountdown({ expiresAt }: { expiresAt: string | null }) {
@@ -189,7 +197,12 @@ function SellerTableRow({ row }: { row: SellerRow }) {
     return (
         <tr className="border-b border-neutral-100 align-top hover:bg-neutral-50/80">
             <td className="px-3 py-3 font-medium text-neutral-900">
-                <span className="block">{row.name}</span>
+                <Link
+                    href={route('isi-plaza.vendedores.show', row.id)}
+                    className="block text-[#121660] hover:underline"
+                >
+                    {row.name}
+                </Link>
                 <span className="font-mono text-xs font-normal text-neutral-500">#{row.id}</span>
             </td>
             <td className="max-w-[min(12rem,22vw)] truncate px-3 py-3 text-neutral-700" title={row.email}>
@@ -327,6 +340,16 @@ function BannerCard({
                     Orden: <span className="font-mono text-neutral-900">{banner.sort_order}</span> · Clics:{' '}
                     <span className="font-mono text-neutral-900">{banner.clicks_count}</span>
                 </p>
+                {banner.treatment?.name ? (
+                    <p>
+                        Tratamiento: <span className="font-medium text-neutral-900">{banner.treatment.name}</span>
+                    </p>
+                ) : null}
+                {banner.link_url ? (
+                    <p className="truncate" title={banner.link_url}>
+                        Enlace: <span className="text-neutral-800">{banner.link_url}</span>
+                    </p>
+                ) : null}
                 <label className="flex cursor-pointer items-center gap-2">
                     <Checkbox
                         checked={banner.is_active}
@@ -460,7 +483,7 @@ function PaginationLinks({ paginator }: { paginator: Paginated<unknown> }) {
     return null;
 }
 
-export default function IsiPlazaGestion({ stats, buyers, sellers, banners, businessCategories }: GestionProps) {
+export default function IsiPlazaGestion({ stats, buyers, sellers, banners, businessCategories, treatments }: GestionProps) {
     const buyerRows = buyers?.data ?? [];
     const sellerRows = sellers?.data ?? [];
     const bannerRows = banners && typeof banners === 'object' && 'data' in banners ? (banners.data ?? []) : [];
@@ -475,6 +498,7 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
         sort_order: 1,
         is_active: true,
         link_url: '',
+        treatment_id: '' as number | '',
     });
 
     const clearBannerUploadFields = () => {
@@ -483,6 +507,7 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
             image: null,
             external_image_url: '',
             link_url: '',
+            treatment_id: '',
         });
         createBannerForm.clearErrors();
         if (bannerImageInputRef.current) {
@@ -662,6 +687,32 @@ export default function IsiPlazaGestion({ stats, buyers, sellers, banners, busin
                             {createBannerForm.errors.business_category_id && (
                                 <p className="text-xs text-red-600">{createBannerForm.errors.business_category_id}</p>
                             )}
+                        </div>
+                        <div className="grid min-w-[200px] gap-1">
+                            <Label>Tratamiento (opcional)</Label>
+                            <select
+                                className="h-10 rounded-md border border-neutral-300 bg-white px-3 text-sm"
+                                value={createBannerForm.data.treatment_id}
+                                onChange={(e) =>
+                                    createBannerForm.setData(
+                                        'treatment_id',
+                                        e.target.value ? Number(e.target.value) : '',
+                                    )
+                                }
+                            >
+                                <option value="">Sin filtro por tratamiento</option>
+                                {(treatments ?? []).map((t) => (
+                                    <option key={t.id} value={t.id}>
+                                        {t.name}
+                                    </option>
+                                ))}
+                            </select>
+                            {createBannerForm.errors.treatment_id && (
+                                <p className="text-xs text-red-600">{createBannerForm.errors.treatment_id}</p>
+                            )}
+                            <p className="text-xs text-neutral-500">
+                                Si eliges un tratamiento, el banner filtra la búsqueda de médicos en la app.
+                            </p>
                         </div>
                         <div className="grid min-w-[220px] gap-1">
                             <Label>Imagen</Label>

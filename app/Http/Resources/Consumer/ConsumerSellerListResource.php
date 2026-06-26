@@ -31,6 +31,9 @@ class ConsumerSellerListResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $profile?->description,
+            'professional_license' => $profile?->professional_license,
+            'address' => $profile?->address,
+            'municipality' => $profile?->municipality,
             'country' => $profile?->country,
             'state' => $profile?->state,
             'avatar_url' => MediaUrl::resolve($profile?->avatar_url),
@@ -44,6 +47,9 @@ class ConsumerSellerListResource extends JsonResource
                 ]
                 : null,
             'is_favorited' => in_array($this->id, $this->favoriteMayoristaIds, true),
+            'distance_km' => isset($this->distance_km)
+                ? round((float) $this->distance_km, 2)
+                : null,
         ];
     }
 }

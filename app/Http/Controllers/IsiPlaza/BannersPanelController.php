@@ -41,6 +41,7 @@ class BannersPanelController extends Controller
             'sort_order' => $request->integer('sort_order'),
             'is_active' => $request->boolean('is_active', true),
             'link_url' => $request->filled('link_url') ? $request->string('link_url')->toString() : null,
+            'treatment_id' => $request->filled('treatment_id') ? $request->integer('treatment_id') : null,
         ]);
 
         return redirect()->route('isi-plaza.gestion')->with('success', 'Banner subido.');
@@ -67,6 +68,15 @@ class BannersPanelController extends Controller
         if ($request->has('is_active')) {
             $banner->is_active = $request->boolean('is_active');
         }
+
+        if ($request->has('link_url')) {
+            $banner->link_url = $request->filled('link_url') ? $request->string('link_url')->toString() : null;
+        }
+
+        if ($request->has('treatment_id')) {
+            $banner->treatment_id = $request->filled('treatment_id') ? $request->integer('treatment_id') : null;
+        }
+
         $banner->save();
 
         $toggleOnly = $request->exists('is_active')

@@ -14,13 +14,17 @@ use App\Http\Controllers\Api\Consumer\FilterController as ConsumerFilterControll
 use App\Http\Controllers\Api\Consumer\InteractionController as ConsumerInteractionController;
 use App\Http\Controllers\Api\Consumer\SellerController as ConsumerSellerController;
 use App\Http\Controllers\Api\Consumer\SellerDocumentController as ConsumerSellerDocumentController;
+use App\Http\Controllers\Api\Consumer\SettingsController as ConsumerSettingsController;
+use App\Http\Controllers\Api\Consumer\TreatmentController as ConsumerTreatmentController;
 use App\Http\Controllers\Api\Seller\AuthController as SellerAuthController;
 use App\Http\Controllers\Api\Seller\BusinessCategoryController;
 use App\Http\Controllers\Api\Seller\CatalogImageController;
+use App\Http\Controllers\Api\Seller\DoctorServiceController;
 use App\Http\Controllers\Api\Seller\MetricsController;
 use App\Http\Controllers\Api\Seller\ProfileController as SellerProfileController;
 use App\Http\Controllers\Api\Seller\SettingsController;
 use App\Http\Controllers\Api\Seller\SubscriptionController;
+use App\Http\Controllers\Api\Seller\TreatmentController as SellerTreatmentController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1/admin')->middleware(['admin.token'])->group(function (): void {
@@ -57,6 +61,7 @@ Route::prefix('v1/seller')->group(function (): void {
     Route::post('forgot-password', [SellerAuthController::class, 'forgotPassword'])->name('api.seller.forgot-password');
 
     Route::get('business-categories', [BusinessCategoryController::class, 'index'])->name('api.seller.business-categories.index');
+    Route::get('treatments', [SellerTreatmentController::class, 'index'])->name('api.seller.treatments.index');
 
     Route::middleware(['auth:sanctum', 'seller.api'])->group(function (): void {
         Route::post('logout', [SellerAuthController::class, 'logout'])->name('api.seller.logout');
@@ -76,6 +81,9 @@ Route::prefix('v1/seller')->group(function (): void {
 
             Route::get('metrics', [MetricsController::class, 'index'])->name('api.seller.metrics.index');
 
+            Route::get('doctor-services', [DoctorServiceController::class, 'index'])->name('api.seller.doctor-services.index');
+            Route::put('doctor-services', [DoctorServiceController::class, 'sync'])->name('api.seller.doctor-services.sync');
+
             Route::get('settings', [SettingsController::class, 'show'])->name('api.seller.settings.show');
             Route::patch('settings/password', [SettingsController::class, 'updatePassword'])->name('api.seller.settings.password');
         });
@@ -93,11 +101,15 @@ Route::prefix('v1/consumer')->group(function (): void {
     Route::post('auth/social', [ConsumerAuthController::class, 'socialLogin'])->name('api.consumer.auth.social');
 
     Route::get('business-categories', [ConsumerBusinessCategoryController::class, 'index'])->name('api.consumer.business-categories.index');
+    Route::get('treatments', [ConsumerTreatmentController::class, 'index'])->name('api.consumer.treatments.index');
+    Route::get('settings', ConsumerSettingsController::class)->name('api.consumer.settings');
     Route::get('banners', [ConsumerBannerController::class, 'index'])->name('api.consumer.banners.index');
     Route::post('banners/{banner}/click', [ConsumerBannerController::class, 'recordClick'])->name('api.consumer.banners.click');
 
     Route::get('filters/countries', [ConsumerFilterController::class, 'countries'])->name('api.consumer.filters.countries');
     Route::get('filters/states', [ConsumerFilterController::class, 'states'])->name('api.consumer.filters.states');
+    Route::get('filters/regions', [ConsumerFilterController::class, 'regions'])->name('api.consumer.filters.regions');
+    Route::get('filters/municipalities', [ConsumerFilterController::class, 'municipalities'])->name('api.consumer.filters.municipalities');
 
     Route::middleware(['sanctum.optional'])->group(function (): void {
         Route::get('sellers', [ConsumerSellerController::class, 'index'])->name('api.consumer.sellers.index');

@@ -9,6 +9,7 @@ use App\Http\Resources\Admin\BuyerResource;
 use App\Http\Resources\Admin\SellerAccountResource;
 use App\Models\Banner;
 use App\Models\BusinessCategory;
+use App\Models\Treatment;
 use App\Models\User;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -29,13 +30,18 @@ class DataManagementPanelController extends Controller
             ->paginate(15, ['*'], 'sellers_page');
 
         $banners = Banner::query()
-            ->with('businessCategory')
+            ->with(['businessCategory', 'treatment'])
             ->orderBy('business_category_id')
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();
 
         $businessCategories = BusinessCategory::query()
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $treatments = Treatment::query()
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get(['id', 'name']);
@@ -49,6 +55,7 @@ class DataManagementPanelController extends Controller
             'sellers' => SellerAccountResource::collection($sellers),
             'banners' => BannerResource::collection($banners),
             'businessCategories' => $businessCategories,
+            'treatments' => $treatments,
         ]);
     }
 }

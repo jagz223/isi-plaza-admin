@@ -18,9 +18,15 @@ class SellerProfile extends Model
         'excel_url',
         'carousel_metadata',
         'description',
+        'professional_license',
         'country',
         'state',
+        'address',
+        'municipality',
+        'latitude',
+        'longitude',
         'whatsapp',
+        'phone',
         'instagram',
         'facebook',
         'website',
@@ -44,6 +50,8 @@ class SellerProfile extends Model
             'subscription_granted_at' => 'datetime',
             'state' => 'array',
             'carousel_metadata' => 'array',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
         ];
     }
 
@@ -69,6 +77,14 @@ class SellerProfile extends Model
     public function catalogImages(): HasMany
     {
         return $this->hasMany(CatalogImage::class, 'seller_profile_id')->orderBy('display_order');
+    }
+
+    /**
+     * @return HasMany<DoctorService, $this>
+     */
+    public function doctorServices(): HasMany
+    {
+        return $this->hasMany(DoctorService::class)->with('treatment.section');
     }
 
     /**

@@ -34,6 +34,8 @@ class UpdateBannerRequest extends FormRequest
                     ->ignore($banner?->id),
             ],
             'is_active' => ['sometimes', 'boolean'],
+            'link_url' => ['nullable', 'url', 'max:2048'],
+            'treatment_id' => ['nullable', 'integer', 'exists:treatments,id'],
         ];
     }
 

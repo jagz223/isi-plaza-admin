@@ -9,7 +9,7 @@ return [
     */
 
     'seller' => [
-        'subscription_price_label' => env('ISI_PLAZA_SUBSCRIPTION_LABEL', 'Suscripción mensual de 69 MXN'),
+        'subscription_price_label' => env('ISI_PLAZA_SUBSCRIPTION_LABEL', 'Suscripción mensual de 100 MXN'),
         'subscription_whatsapp_url' => env('ISI_PLAZA_SUBSCRIPTION_WHATSAPP_URL', 'https://wa.me/5215500000000?text=Solicito%20suscripción%20ISI%20PLAZA'),
         'promotion_whatsapp_url' => env('ISI_PLAZA_PROMOTION_WHATSAPP_URL', 'https://wa.me/5215500000000?text=Solicito%20promoción%20banner%20ISI%20PLAZA'),
         'max_catalog_images' => 5,

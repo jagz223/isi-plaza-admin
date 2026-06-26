@@ -29,8 +29,12 @@ class ConsumerSellerDetailResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'description' => $profile?->description,
+            'professional_license' => $profile?->professional_license,
+            'address' => $profile?->address,
+            'municipality' => $profile?->municipality,
             'country' => $profile?->country,
             'state' => $profile?->state,
+            'phone' => $profile?->phone,
             'avatar_url' => MediaUrl::resolve($profile?->avatar_url),
             'whatsapp' => $profile?->whatsapp,
             'instagram' => $profile?->instagram,
@@ -64,6 +68,15 @@ class ConsumerSellerDetailResource extends JsonResource
                 ]
             )->values(),
             'is_favorited' => $this->isFavorited,
+            'services' => $profile?->relationLoaded('doctorServices')
+                ? $profile->doctorServices->map(fn ($service) => [
+                    'id' => $service->id,
+                    'treatment_id' => $service->treatment_id,
+                    'price' => (float) $service->price,
+                    'name' => $service->treatment?->name,
+                    'section_name' => $service->treatment?->section?->name,
+                ])->values()
+                : [],
         ];
     }
 

@@ -1,5 +1,5 @@
 import { Link, useForm, usePage } from '@inertiajs/react';
-import { type LucideIcon, ClipboardList, KeyRound, LogOut, Type } from 'lucide-react';
+import { type LucideIcon, ClipboardList, FileText, KeyRound, LogOut, Stethoscope, Type } from 'lucide-react';
 import { type PropsWithChildren } from 'react';
 
 import { IsiPlazaFlashMessages } from '@/components/isi-plaza/isi-plaza-flash-messages';
@@ -11,6 +11,8 @@ import { Menu, X } from 'lucide-react';
 
 const nav: { title: string; path: string; routeName: string; icon: LucideIcon }[] = [
     { title: 'Gestión de datos', path: '/isi-plaza/gestion', routeName: 'isi-plaza.gestion', icon: ClipboardList },
+    { title: 'Tratamientos', path: '/isi-plaza/tratamientos', routeName: 'isi-plaza.tratamientos.index', icon: Stethoscope },
+    { title: 'Textos app paciente', path: '/isi-plaza/textos-paciente', routeName: 'isi-plaza.textos-paciente.index', icon: FileText },
     { title: 'Textos y números', path: '/isi-plaza/textos-numeros', routeName: 'isi-plaza.textos-numeros.index', icon: Type },
     { title: 'Ajustes de acceso', path: '/isi-plaza/ajustes-acceso', routeName: 'isi-plaza.ajustes-acceso.index', icon: KeyRound },
 ];

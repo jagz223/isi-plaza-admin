@@ -45,7 +45,7 @@ class SellerAppSettings
     public static function defaults(): array
     {
         return [
-            self::SUBSCRIPTION_PLAN_LABEL => 'Plan mayorista',
+            self::SUBSCRIPTION_PLAN_LABEL => 'Plan Dentista',
             self::SUBSCRIPTION_PRICE_LABEL => (string) config('isi-plaza.seller.subscription_price_label'),
             self::SUBSCRIPTION_MESSAGE_PENDING => 'Contacta por WhatsApp para completar el pago. El administrador activará tu cuenta desde el panel.',
             self::SUBSCRIPTION_MESSAGE_ACTIVE => 'Tu suscripción está activa. Puedes usar el resto de la aplicación.',
